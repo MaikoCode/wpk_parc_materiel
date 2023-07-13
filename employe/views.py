@@ -1,13 +1,8 @@
 from django.shortcuts import render, redirect
-
 from employe.models import Employe
-
 from django.db.models import Q
-
 from django.contrib import messages
-
 from django.core.paginator import Paginator
-
 from . import forms
 from authentication.models import User
 from mouvementmateriels.models import MouvementMateriel
@@ -29,26 +24,19 @@ def employes(request):
                 dateEmbauche=formEmpData.cleaned_data['dateEmbauche'],
                 email=formEmpData.cleaned_data['email']
             )
-            
             employee.save()
             messages.success(request, 'Un nouveau employé est ajouté.')
             return redirect('employes')
-        
-
     formEmp = forms.EmployeForm()
     # employes = Employe.objects.all()  
-
     # Handle search query
     search_query = request.GET.get('search_query')
     employes = get_filtered_employes(search_query)
-
     # = Employe.objects.order_by('idEmploye').all()
-
     page = Paginator(employes, 2)
     page_liste = request.GET.get('page')
     page = page.get_page(page_liste)  
     return render(request, 'index.html', {'page': page, 'formEmp': formEmp}) 
-
     # return render(request, 'index.html', {'employes': employes, 'formEmp': formEmp}) 
 
 # Définition de la fonction qui sera exécutée lorsqu'un employé est enregistré
@@ -63,7 +51,6 @@ def create_user_for_employe(sender, instance, created, **kwargs):
         user.save()
 
 
-
 def delete_employee(request, employee_id):
     employee = Employe.objects.get(idEmploye=employee_id)
     employee.delete()
@@ -73,7 +60,6 @@ def delete_employee(request, employee_id):
 def edit_employee(request, employee_id):
     employee = Employe.objects.get(idEmploye=employee_id)
     print(employee.nom)
-
     if request.method == 'POST':
         form = forms.EmployeForm(request.POST)
         if form.is_valid():
@@ -86,7 +72,6 @@ def edit_employee(request, employee_id):
             employee.save()
             print("Le nom modifie ", form.cleaned_data['nom'])
             messages.success(request, "Les infos de l'employé " + employee.nom +" sont modifiés")
-    
     return redirect('employes')
 
 
@@ -107,5 +92,4 @@ def get_filtered_employes(search_query):
 def employee_mouvement_history(request, idEmploye):
     employe = Employe.objects.get(idEmploye=idEmploye)
     mouvements = MouvementMateriel.objects.filter(employe=employe)
- 
     return render(request, 'historique_employe.html', {'employe': employe, 'mouvements': mouvements })

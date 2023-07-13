@@ -40,3 +40,14 @@ class DemandeMateriel(models.Model):
             return demande.status
         except DemandeMateriel.DoesNotExist:
             return None
+
+class Demande_Materiel(models.Model):
+    demandeur = models.ForeignKey(Employe, on_delete=models.CASCADE)
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    date_demande = models.DateField()
+    date_reponse = models.DateField()
+    description = models.TextField()
+    status = models.CharField(max_length=100 , default="pas encore traite")
+
+
+

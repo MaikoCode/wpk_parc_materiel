@@ -1,17 +1,19 @@
 from datetime import date
 from django.shortcuts import get_object_or_404, render, redirect
-
 from materiels.models import Materiel
 from .forms import AffectationForm, MouvementForm
-
 from django.contrib import messages
-
 from django.core.paginator import Paginator
-
 from mouvementmateriels.models import MouvementMateriel
-
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.decorators import method_decorator
 
+def is_admin(user):
+    return user.role == 'ADMIN'
+
+@login_required
+@user_passes_test(is_admin)
 def mouvements(request):
     if request.method == 'POST':
         form = MouvementForm(request.POST)
@@ -26,20 +28,18 @@ def mouvements(request):
         except Exception as e:
             messages.error(request, 'Une erreur est survenur lors de l\'ajout d\'un mouvement')
     form = MouvementForm()
-
     # Handle search query
     search_query = request.GET.get('search_query')
     get_mouvements = get_filtered_mouvement(search_query)
-
     # get_mouvements =  MouvementMateriel.objects.all()
-    
     #pagination
     page = Paginator(get_mouvements, 3)
     page_liste = request.GET.get('page')
     page = page.get_page(page_liste) 
     return render(request, 'mouvements.html', {'page': page,'form': form })
 
-
+@login_required
+@user_passes_test(is_admin)
 def delete_mouvement(request, idMouvement):
     mouvement = MouvementMateriel.objects.get(idMouvement=idMouvement)
     materiel = mouvement.materiel
@@ -50,7 +50,8 @@ def delete_mouvement(request, idMouvement):
     return redirect('mouvements')
     
 
-
+@login_required
+@user_passes_test(is_admin)
 def edit_mouvement(request, idMouvement):
     mouvement = MouvementMateriel.objects.get(idMouvement=idMouvement)
     if request.method == 'POST':
@@ -77,7 +78,8 @@ def edit_mouvement(request, idMouvement):
         print(mouvement.description)
     return redirect('mouvements')
 
-
+@login_required
+@user_passes_test(is_admin)
 def affecter_mouvement(request, idMouvement):
     mouvement = MouvementMateriel.objects.get(idMouvement=idMouvement)
     if request.method == 'POST':
@@ -92,10 +94,8 @@ def affecter_mouvement(request, idMouvement):
             mouvement.actionType = "Retour"
             mouvement.dateRetour = date.today()
             mouvement.save()
-
             materiel_instance = mouvement.materiel
             employe_instance = employe
-
             newMouvement = MouvementMateriel(
                 dateMouvement=date_mouvement,
                 dateRetour=None,
@@ -108,8 +108,6 @@ def affecter_mouvement(request, idMouvement):
             messages.success(request, 'Le mouvement matériel est  affecté avec success.')
         else:
             messages.error(request, 'Une erreur est rencontré')
-
-            
     return redirect('mouvements')
 
 

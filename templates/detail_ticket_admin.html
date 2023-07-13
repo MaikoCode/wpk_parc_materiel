@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags %}
+      {% if message.tags == 'error' %}
+        <div class="alert alert-danger alert-dismissible">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>{{ message.tags|capfirst }}!</strong> {{ message }}.
+        </div>
+      {% else %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>{{ message.tags|capfirst }}!</strong> {{ message }}.
+        </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+<a href="{% url 'alltickets' %}" class="btn btn-secondary">
+    <i class="bi bi-arrow-return-left"></i> Back
+</a>
+<div class="card" style="width: 70%; margin-left: 15%;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="m-0 font-weight-bold text-primary">{{ ticket.request_by.nom }} {{ ticket.request_by.prenom }}</h5>
+        <span class="text-muted">{{ ticket.request_date|date:"F j, Y, g:i a" }}</span>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ ticket.title }}</h5>
+        <p class="card-text">{{ ticket.description|safe }}</p>
+    </div>
+</div>
+
+{% if ticket.responses.all %}
+<h3 class="mt-4 text-primary" style="margin-left: 15%;">Responses: </h3>
+
+{% for response in ticket.responses.all %}
+<div class="card mt-2 " style="width: 70%; margin-left: 15%;">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">{{ response.employee.nom }} {{ response.employee.prenom }}</h6>
+        <span class="text-muted">{{ response.response_date|date:"F j, Y, g:i a" }}</span>
+    </div>
+    <div class="card-body">
+        <p class="card-text">{{ response.response_text|safe }}</p>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-info mt-4" style="width: 70%; margin-left: 15%;">No responses found for this ticket.</div>
+{% endif %}
+
+<!-- Response Form -->
+<div class="card mt-4" style="width: 70%; margin-left: 15%;">
+    <div class="card-header">
+        <h5 class="m-0 font-weight-bold text-primary">Add a Response</h5>
+    </div>
+    <div class="card-body custom-summernote">
+        <form method="post" action="">
+            {% csrf_token %}
+            {{ form2.response_text|safe }}
+            <button type="submit" class="btn btn-primary mt-2">Submit Response</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

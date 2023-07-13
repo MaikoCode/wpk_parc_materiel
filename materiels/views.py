@@ -11,6 +11,8 @@ from fournisseur.models import Fournisseur
 import json
 from .forms import DemandeMaterielForm
 from django.views.generic import ListView
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.decorators import method_decorator
 from django.core.paginator import Paginator
 from django.db.models import Q
 
@@ -44,6 +46,15 @@ def get_materials_for_subcategory(request, subcategory_id, page=1):
     except SousCategorie.DoesNotExist:
         return JsonResponse({'error': 'SousCategorie not found'}, status=404)
 
+
+def is_admin(user):
+    return user.role == 'ADMIN'
+
+def is_user(user):
+    return user.role == 'USER'
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(is_admin), name='dispatch')
 class MaterielListView(View):
     def get(self, request):
         category_id = request.GET.get('category_id')
@@ -115,6 +126,9 @@ class MaterielListView(View):
         messages.error(request, "Une erreur s'est produite lors de la soumission du formulaire.")
         return render(request, 'materiels.html', context)
 
+
+@login_required
+@user_passes_test(is_admin)
 def delete_materiel(request, materiel_id):
     materiel = get_object_or_404(Materiel, idMateriel=materiel_id)
     materiel_name = materiel.nomMateriel  # Get the name before deleting the object
@@ -122,6 +136,8 @@ def delete_materiel(request, materiel_id):
     messages.success(request, f"Le matériel {materiel_name} a été supprimé.")
     return redirect(reverse('materiel_list'))
 
+@login_required
+@user_passes_test(is_admin)
 def edit_materiel(request, materiel_id):
     materiel = Materiel.objects.get(idMateriel=materiel_id)
     print(materiel.description)
@@ -138,7 +154,11 @@ def edit_materiel(request, materiel_id):
     return redirect('materiel_list')
 
 # Utilisez la classe basée sur les vues pour votre vue MaterielListView_User
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_passes_test(is_user), name='dispatch')
 class MaterielListView_User(View):
+    
     def get(self, request):
         categories = Categorie.objects.all()
         sub_categories = SousCategorie.objects.all()
@@ -160,6 +180,9 @@ class MaterielListView_User(View):
         }
         return render(request, 'materiels_user.html', context)
 
+
+@login_required
+@user_passes_test(is_user)
 def demander_materiel(request):
     if request.method == 'POST':
         form = DemandeMaterielForm(request.POST)
@@ -196,6 +219,7 @@ class Gestion_Demande(ListView):
     def get(self, request):
         demandes=DemandeMateriel.objects.all()
         l=["ID demande",
+            "Demandeur",
             "Date de début d'utilisation",
             "Description de la demande",
             "nom materiel",
@@ -223,6 +247,9 @@ class Gestion_Demande(ListView):
             messages.warning(request, f'Demande {demande.id} rejetée.')
         return render(request, self.template_name, {'demandes': self.get_queryset()})
 
+
+@login_required
+@user_passes_test(is_admin)
 def accepter_demande(request, demande_id):
     demande = get_object_or_404(DemandeMateriel, id=demande_id)
     # Mettre à jour le statut de la demande en "Acceptée"
@@ -233,6 +260,8 @@ def accepter_demande(request, demande_id):
     # Rediriger l'utilisateur vers la même page
     return redirect(request.META['HTTP_REFERER'])  
 
+@login_required
+@user_passes_test(is_admin)
 def rejeter_demande(request, demande_id):
     demande = get_object_or_404(DemandeMateriel, id=demande_id)
     demande.status = "Rejetée"
@@ -240,4 +269,8 @@ def rejeter_demande(request, demande_id):
     # Afficher un message de succès
     messages.success(request, "La demande a été rejetée.")
     # Rediriger l'utilisateur vers la même page
-    return redirect(request.META['HTTP_REFERER'])
+    return redirect(request.META['HTTP_REFERER']) 
+
+@login_required
+def Rech_demande(request):
+    return render(request, 'gestion_demande.html')

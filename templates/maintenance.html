@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success alert-dismissible">
+      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      <strong>Success!</strong> {{ message }}.
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0">Maintenance materiels</h1>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#maintenanceModal">Ajouter une panne</button>
+</div>
+
+<div class="modal fade" id="maintenanceModal" tabindex="-1" role="dialog" aria-labelledby="maintenanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="maintenanceModalLabel">Ajouter une panne</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="materiel">Materiel:</label>
+                        <div class="dropdown">
+                            <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" class="form-control">
+                            <select name="materiel" id="materiel" class="form-control">
+                                {% for materiel in materiels %}
+                                <option value="{{ materiel.idMateriel }}">{{ materiel.nomMateriel }} - {{ materiel.NumSerie}}</option>                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                      
+                    <div class="form-group">
+                        <label for="file">File:</label>
+                        <input type="file" name="file" id="file" class="form-control">
+                    </div>
+                    <!-- Add other fields as needed -->
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            Historique des maintenances des matériels
+        </div>
+        <div class="card-body">
+            <div class="table-responsive" style="overflow: visible;">
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-w">
+                        <tr>
+                            <th>Num de serie</th>
+                            <th>Matériel</th>
+                            <th>Date panne</th>
+                            <th style="width: 30%;">Description</th>
+                            <th>Files</th>
+                            <th style="width: 16%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for maintenance in maintenances %}
+                        <tr>
+                            <td>{{ maintenance.materiel.NumSerie }}</td>
+                            <td>{{ maintenance.materiel.nomMateriel }}</td>
+                            <td>{{ maintenance.date_panne|date:"d-m-Y"  }}</td>
+                            <td>{{ maintenance.description }}</td>
+                            <td>
+                                {% if maintenance.file %}
+                                <a href="{{ maintenance.file.url }}" target="_blank">See</a>
+                                {% else %}
+                                No file
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'detail_maintenance' maintenance.id %}"><i class="fas fa-eye"></i></a>                                                               
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <!-- pagination -->
+                <div class="container">
+                    <div class="row my-5">
+                        <div class="col-md-4">
+                            <p>Page: {{ maintenances.number }}/{{ maintenances.paginator.num_pages }}</p>
+                            <nav aria-label="...">
+                                <ul class="pagination">
+                                    <li class="page-item">
+                                        {% if tickets.has_previous %}
+                                        <a class="page-link" href="?page={{ maintenances.previous_page_number }}">Previous</a>
+                                        {% endif %}
+                                    </li>
+
+                                    {% for num_page in tickets.paginator.page_range %}
+                                        {% if tickets.number == num_page %}
+                                        <li class="page-item active" aria-current="page">
+                                            <a class="page-link" href="?page={{ num_page }}">{{ num_page }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num_page }}">{{ num_page }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <li class="page-item">
+                                        {% if factures.has_next %}
+                                        <a class="page-link" href="?page={{ maintenances.next_page_number }}">Next</a>
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <!-- end pagination -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

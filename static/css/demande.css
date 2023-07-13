@@ -1,0 +1,63 @@
+
+.custom-summernote .summernote-div iframe {
+    width: 100%; /* Ajustez la largeur selon vos préférences */
+    max-width: 100%; /* Assurez-vous que l'éditeur ne dépasse pas son conteneur */
+    height: 20em; /* Ajustez la largeur selon vos préférences */
+    max-height: 20em;
+}
+
+/* Center-align the modal title */
+.custom-modal-title {
+    text-align: center;
+    width: 100%; /* Ensure the title spans the entire width */
+}
+
+.custom-summernote .note-editable {
+    width: 100%;
+}
+
+
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+    overflow: visible;
+}
+
+.custom-dropdown-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.custom-dropdown-content {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-top: none;
+    display: none;
+    min-width: 60px;
+    z-index: 1;
+}
+
+.custom-dropdown-content a {
+    display: block;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #333;
+}
+
+.custom-dropdown-content a:hover {
+    background-color: #f8f9fa;
+}
+
+.custom-dropdown:hover .custom-dropdown-content {
+    display: block;
+}
+
+.style_list {
+    text-align: right;
+    color: #000;
+}
