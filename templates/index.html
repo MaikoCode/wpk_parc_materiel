@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success alert-dismissible">
+      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      <strong>Success!</strong> {{ message }}.
+    </div>
+  {% endfor %}
+{% endif %}
+
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0">Liste des employés</h1>
+    <button type="button" class="btn btn-primary col-2" data-toggle="modal" data-target="#employeeModal">Ajouter un employé</button>
+</div>
+
+<!-- Modal-->
+<div class="modal fade" id="employeeModal" tabindex="-1" role="dialog" aria-labelledby="employeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="employeeModalLabel">Ajouter un employé</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="nom">Nom</label>
+              {{ formEmp.nom }}
+            </div>
+            <div class="form-group">
+              <label for="prenom">Prénom</label>
+              {{ formEmp.prenom }}
+            </div>
+            <div class="form-group">
+              <label for="date_embauche">Date d'embauche</label>
+              {{ formEmp.dateEmbauche }}
+            </div>
+            <div class="form-group">
+              <label for="poste">Poste</label>
+              {{ formEmp.poste }}
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              {{ formEmp.email }}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  
+<!-- end modal-->
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+    </div>
+    <div class="card-body">
+      <!-- Search Form -->
+      <form method="get" action="{% url 'employes' %}">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search_query" placeholder="Search for employee...">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </form>
+    <!-- End Search Form -->
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>date embauche</th>
+                        <th>Poste</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in page.object_list %}
+                    <tr>
+                        <td>{{ emp.idEmploye }}</td>
+                        <td>{{ emp.nom }}</td>
+                        <td>{{ emp.prenom }}</td>
+                        <td>{{ emp.dateEmbauche }}</td>
+                        <td>{{ emp.poste }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td>
+                          <!-- Edit Icon -->
+                          <a href="#" data-toggle="modal" data-target="#editModal-{{ emp.idEmploye }}">
+                              <i class="fas fa-edit"></i>
+                          </a>
+                          &nbsp;
+                          &nbsp;
+                          <!-- Delete Icon -->
+                          <a href="#" data-toggle="modal" data-target="#deleteConfirmationModal-{{ emp.idEmploye }}">
+                            <i class="fas fa-trash" style="color: red;"></i>
+                          </a>
+                      </td>
+                    </tr>
+
+                    <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="deleteConfirmationModal-{{ emp.idEmploye }}" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel-{{ emp.idEmploye }}" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                              <div class="modal-header">
+                                  <h5 class="modal-title" id="deleteConfirmationModalLabel-{{ emp.idEmploye }}">Delete Employee</h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                      <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="modal-body">
+                                  <p>Are you sure you want to delete the employee: {{ emp.nom }}?</p>
+                              </div>
+                              <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                  <a href="{% url 'delete_employee' emp.idEmploye %}" class="btn btn-danger">Delete</a>
+                              </div>
+                          </div>
+                      </div>
+                    </div>
+                    <!-- End Confirmation Modal -->
+                     <!-- Edit Modal -->
+                     <div class="modal fade" id="editModal-{{ emp.idEmploye }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel-{{ emp.idEmploye }}" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                              <div class="modal-header">
+                                  <h5 class="modal-title" id="editModalLabel-{{ emp.idEmploye }}">Edit Employee</h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                      <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="modal-body">
+                                  <!-- Edit Form -->
+                                  <form method="post" action="{% url 'edit_employee' emp.idEmploye %}">
+                                      {% csrf_token %}
+                                      <!-- Display existing data in form fields -->
+                                      <div class="form-group">
+                                          <label for="nom">Nom</label>
+                                          <input type="text" class="form-control" id="nom" name="nom" value="{{ emp.nom }}">
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="prenom">Prénom</label>
+                                          <input type="text" class="form-control" id="prenom" name="prenom" value="{{ emp.prenom }}">
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="dateEmbauche">Date d'embauche</label>
+                                          <input type="date" class="form-control" id="dateEmbauche" name="dateEmbauche" value="{{ emp.dateEmbauche }}">
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="poste">Poste</label>
+                                          <input type="text" class="form-control" id="poste" name="poste" value="{{ emp.poste }}">
+                                      </div>
+                                      <div class="form-group">
+                                          <label for="email">Email</label>
+                                          <input type="email" class="form-control" id="email" name="email" value="{{ emp.email }}">
+                                      </div>
+                                      <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                          <button type="submit" class="btn btn-primary">Modifier</button>
+                                      </div>
+                                  </form>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  {% endfor %}
+                    
+                </tbody>
+            </table>
+
+            <!-- pagination -->
+            <div class="container">
+              <div class="row my-5">
+                <div class="col-md-4">
+                  <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
+                  <nav aria-label="...">
+                    <ul class="pagination">
+                      <li class="page-item">
+                        {% if page.has_previous %}
+                        <a class="page-link" href="{% url 'employes' %}?page={{ page.previous_page_number }}">Previous</a>
+                        {% endif %}
+                      </li>
+
+                      {% for num_page in page.paginator.page_range %}
+                        {% if page.number == num_page %}
+                        <li class="page-item active" aria-current="page">
+                          <a class="page-link" href="{% url 'employes' %}?page={{ num_page }}">{{ num_page }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item" aria-current="page">
+                          <a class="page-link" href="{% url 'employes' %}?page={{ num_page }}">{{ num_page }}</a>
+                        </li>
+                        {% endif %}
+
+                      {% endfor %}
+
+                      <li class="page-item">
+                        {% if page.has_next %}
+                        <a class="page-link" href="{% url 'employes' %}?page={{ page.next_page_number }}">Next</a>
+                        {% endif %}
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <!-- end pagination -->
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

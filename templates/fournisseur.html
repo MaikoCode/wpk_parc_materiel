@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success alert-dismissible">
+      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      <strong>Success!</strong> {{ message }}.
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0">Liste des fournisseurs</h1>
+    <button type="button" class="btn btn-primary col-2" data-toggle="modal" data-target="#fournisseurFormModal">Ajouter un fournisseur</button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade fournisseur-modal" id="fournisseurFormModal" tabindex="-1" aria-labelledby="fournisseurFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fournisseurFormModalLabel">Nouveau Fournisseur</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="post" class="form">
+            {% csrf_token %}
+            <!-- Place your form fields here -->
+            <div class="mb-3">
+              <label for="id_nomFournisseur" class="form-label">Nom</label>
+              <input type="text" class="form-control" id="id_nomFournisseur" name="nomFournisseur" value="{{ form.nomFournisseur.value|default:'' }}">
+              {% if form.nomFournisseur.errors %}
+                <div class="alert alert-danger mt-2">
+                  {{ form.nomFournisseur.errors }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="id_adresse" class="form-label">Adresse</label>
+              <input type="text" class="form-control" id="id_adresse" name="adresse" value="{{ form.adresse.value|default:'' }}">
+              {% if form.adresse.errors %}
+                <div class="alert alert-danger mt-2">
+                  {{ form.adresse.errors }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="id_email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="id_email" name="email" value="{{ form.email.value|default:'' }}">
+                {% if form.email.errors %}
+                  <div class="alert alert-danger mt-2">
+                    {{ form.email.errors }}
+                  </div>
+                {% endif %}
+              </div>
+              
+              <div class="mb-3">
+                <label for="id_telephone" class="form-label">Téléphone</label>
+                <input type="text" class="form-control" id="id_telephone" name="telephone" value="{{ form.telephone.value|default:'' }}">
+                {% if form.telephone.errors %}
+                  <div class="alert alert-danger mt-2">
+                    {{ form.telephone.errors }}
+                  </div>
+                {% endif %}
+              </div>
+            <!-- Repeat for each field -->
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--End modal-->
+
+<div class="card shadow mb-4">
+   
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Adresse</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for fournisseur in fournisseurs %}
+                          <tr>
+                            <td>{{ fournisseur.nomFournisseur }}</td>
+                            <td>{{ fournisseur.adresse }}</td>
+                            <td>{{ fournisseur.email }}</td>
+                            <td>{{ fournisseur.telephone }}</td>
+                            <td>
+                                <a href="#" data-toggle="modal" data-target="#editModal-{{ fournisseur.idFournisseur }}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                &nbsp;
+                                &nbsp;
+                                <a href="#" data-toggle="modal" data-target="#deleteConfirmationModal-{{ fournisseur.idFournisseur }}">
+                                  <i class="fas fa-trash" style="color: red;"></i>
+                                </a>
+                            </td>
+                          </tr>
+                          <div class="modal fade" id="deleteConfirmationModal-{{ fournisseur.idFournisseur }}" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel-{{ fournisseur.idFournisseur }}" aria-hidden="true">
+                              <div class="modal-dialog" role="document">
+                                  <div class="modal-content">
+                                      <div class="modal-header">
+                                          <h5 class="modal-title" id="deleteConfirmationModalLabel-{{ fournisseur.idFournisseur }}">Delete Fournisseur</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                              <span aria-hidden="true">&times;</span>
+                                          </button>
+                                      </div>
+                                      <div class="modal-body">
+                                          <p>Are you sure you want to delete this Fournisseur: {{ fournisseur.nomFournisseur }}?</p>
+                                      </div>
+                                      <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                          <a href="{% url 'delete_fournisseur' fournisseur.idFournisseur %}" class="btn btn-danger">Delete</a>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="modal fade" id="editModal-{{ fournisseur.idFournisseur }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel-{{ fournisseur.idFournisseur }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel-{{ fournisseur.idFournisseur }}">Edit fournisseur</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post" action="{% url 'edit_fournisseur' fournisseur.idFournisseur %}">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <label for="nomFournisseur-{{fournisseur.idFournisseur}}">Nom</label>
+                                                <input type="text" id="nomFournisseur-{{fournisseur.idFournisseur}}" name="nomFournisseur" class="form-control" value="{{ fournisseur.nomFournisseur }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="adresse-{{fournisseur.idFournisseur}}">Adresse</label>
+                                                <input type="text" id="adresse-{{fournisseur.idFournisseur}}" name="adresse" class="form-control" value="{{ fournisseur.adresse }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email-{{fournisseur.idFournisseur}}">Email</label>
+                                                <input type="text" id="email-{{fournisseur.idFournisseur}}" name="email" class="form-control" value="{{ fournisseur.email }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="telephone-{{fournisseur.idFournisseur}}">Telephone</label>
+                                                <input type="text" id="telephone-{{fournisseur.idFournisseur}}" name="telephone" class="form-control" value="{{ fournisseur.telephone }}">
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" value="Update" class="btn btn-primary">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                      </tbody>
+                      
+                   {% comment %} Les modal de modification et de suppression {% endcomment %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.onload = function() {
+    // Récupérer le formulaire
+    var form = document.querySelector(".form");
+    // S'il y a des erreurs dans le formulaire, ouvrir la modale
+    if (form.querySelectorAll(".alert-danger").length > 0) {
+      var myModal = new bootstrap.Modal(document.getElementById('fournisseurFormModal'), {})
+      myModal.show();
+    }
+  }
+</script>
+{% endblock %}
+
+<script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+<script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>

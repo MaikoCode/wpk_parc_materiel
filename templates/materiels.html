@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Liste materiel Wpk</h1>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- Button trigger modal -->
+    <button type="button" class="d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal"
+        data-target="#exampleModalCenter">
+        Ajouter un nouveau Materiel
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Ajout d un nouveaux materiel</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="mx-auto my-4" method="POST">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="categorie">Catégorie</label>
+                            <select id="categorie" name="categorie" class="form-control"
+                                onchange="handleCategoryChange(this)">
+                                <option value="" selected>Choisir une catégorie</option>
+                                {% for category in categories %}
+                                <option value="{{ category.idCategory }}">{{ category.nomCategory }}</option>
+                                {% endfor %}
+                                <option value="new">Créer une nouvelle catégorie</option>
+                            </select>
+                        </div>
+
+                        <div id="new_category_input" style="display: none;">
+                            <div class="row justify-content-end">
+                                <div class="form-group col-md-6">
+                                    <label for="new_category_name">Nom de la catégorie</label>
+                                    <input type="text" id="new_category_name" name="new_category_name"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="new_category_description">Description de la catégorie</label>
+                                    <textarea id="new_category_description" name="new_category_description"
+                                        class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sub_category">Sous-catégorie</label>
+                            <select id="sub_category" name="sub_category" class="form-control">
+                                <option value="" selected>Choisir une sous-catégorie</option>
+                                {% for sous_category in sub_categories %}
+                                <option value="{{ sous_category.idSousCategorie }}" class="sub-category-option"
+                                    data-category="{{ sous_category.categorie.idCategory }}" disabled>
+                                    {{ sous_category.nomSousCategory }}
+                                </option>
+                                {% endfor %}
+                                <option value="new">Créer une nouvelle sous-catégorie</option>
+                            </select>
+                        </div>
+
+                        <div id="new_sub_category_input" style="display: none;">
+                            <div class="row justify-content-end">
+
+                                <div class="form-group col-md-6">
+                                    <label for="new_sub_category_name">Nom de la sous-catégorie</label>
+                                    <input type="text" id="new_sub_category_name" name="new_sub_category_name"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="new_sub_category_description">Description de la sous-catégorie</label>
+                                    <textarea id="new_sub_category_description" name="new_sub_category_description"
+                                        class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="materiel_name">Nom du matériel</label>
+                            <input type="text" id="materiel_name" name="materiel_name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="num_serie">N° serie du matériel</label>
+                            <input type="text" id="num_serie" name="num_serie" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="materiel_description">Description du matériel</label>
+                            <textarea id="materiel_description" name="materiel_description"
+                                class="form-control"></textarea>
+                        </div>
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Erreur de validation :</strong>
+                            <ul>
+                                {% for field in form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container">
+    
+    <div class="card">
+        <div class="card-header">
+            Catégories
+        </div>
+        <div class="card-body">
+            {% for categorie in categories %}
+            <div class="category-row" data-toggle="collapse" data-target="#sous-categorie-{{ categorie.idCategory }}"
+                aria-expanded="false" style="background-color: #3e98d1; color: white; height: 40px; 
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                cursor: pointer;
+                margin-bottom: 0.5%;">
+                {{ categorie.nomCategory }} <span class="collapse-indicator">&#x25BC;</span>
+            </div>
+            <div id="sous-categorie-{{ categorie.idCategory }}" class="collapse">
+                {% for sous_categorie in categorie.souscategorie_set.all %}
+                <div class="sub-category-row" data-toggle="collapse"
+                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false" style="background-color: #f7f7f7; margin-left: 2%;margin-bottom: 1%; width: 98%;     height: 30px; 
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 10px 20px;
+                    cursor: pointer;">
+                    {{ sous_categorie.nomSousCategory }} <span class="collapse-indicator">&#x25BC;</span>
+                </div>
+                <div id="materiel-{{ sous_categorie.idSousCategorie }}" class="collapse">
+                    <div class="list-group" style="background-color: #f7f7f7; margin-left: 4%; width: 96%;">
+                        {% for materiel in sous_categorie.materiel_set.all %}
+                        <div class="material-row" style=" padding: 10px 20px;
+                        border-bottom: 1px solid #ccc;
+                        margin-bottom: 1%;">
+                            <div class="d-flex flex-wrap align-items-center">
+                                <div class="flex-grow-1">
+                                    <strong>Nom:</strong> {{ materiel.nomMateriel }}<br>
+                                    <strong>Numéro de série:</strong> {{ materiel.NumSerie }}<br>
+                                    <strong>Description:</strong> {{ materiel.description }}
+                                </div>
+                                <div>
+                                    <!-- Modifier Icon -->
+                                    <button type="button" class="btn btn-link edit-button" data-toggle="modal"
+                                        data-target="#editModal-{{ materiel.idMateriel }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    &nbsp;
+                                    &nbsp;
+                                    <!-- Supprimer Icon -->
+                                    <button type="button" class="btn btn-link delete-button" data-toggle="modal"
+                                        data-target="#deleteConfirmationModal-{{ materiel.idMateriel }}"
+                                        style="color: red;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% for categorie in categories %}
+{% for sous_categorie in categorie.souscategorie_set.all %}
+{% for materiel in sous_categorie.materiel_set.all %}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal-{{ materiel.idMateriel }}" tabindex="-1" role="dialog"
+    aria-labelledby="deleteConfirmationModalLabel-{{ materiel.idMateriel }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel-{{ fournisseur.idFournisseur }}">Delete
+                    Fournisseur</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this Fournisseur: {{ categorie.nomMateriel }}?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="{% url 'delete_materiel' materiel.idMateriel %}" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal-{{ materiel.idMateriel }}" tabindex="-1" role="dialog"
+    aria-labelledby="editModalLabel-{{ materiel.idMateriel }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel-{{ materiel.idMateriel }}">Edit Materiel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'edit_materiel' materiel.idMateriel %}">
+                    {% csrf_token %}
+
+
+                    <!-- Materiel Name -->
+                    <div class="form-group">
+                        <label for="materiel_name">Nom du matériel</label>
+                        <input type="text" id="materiel_name" name="materiel_name" class="form-control"
+                            value="{{ materiel.nomMateriel }}">
+                    </div>
+
+                    <!-- Numéro de Série -->
+                    <div class="form-group">
+                        <label for="num_serie">N° série du matériel</label>
+                        <input type="text" id="num_serie" name="num_serie" class="form-control"
+                            value="{{ materiel.NumSerie }}">
+                    </div>
+
+                    <!-- Materiel Description -->
+                    <div class="form-group">
+                        <label for="materiel_description">Description du matériel</label>
+                        <textarea id="materiel_description" name="materiel_description"
+                            class="form-control">{{ materiel.description }}</textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // Gérer le basculement de la flèche de catégorie lors du clic
+    $('.category-row').click(function (event) {
+        event.stopPropagation();
+        $(this).find('.collapse-indicator').toggleClass('collapsed');
+        var target = $(this).data('target');
+        $(target).toggleClass('show');
+    });
+
+    $('.sub-category-row').click(function (event) {
+        event.stopPropagation();
+        $(this).find('.collapse-indicator').toggleClass('collapsed');
+        var target = $(this).data('target');
+        $(target).toggleClass('show');
+    });
+
+    function handleCategoryChange(select) {
+        var newCategoryInput = document.getElementById("new_category_input");
+        var newCategoryOption = document.querySelector("#categorie option[value='new']");
+
+        if (select.value === "new") {
+            newCategoryInput.style.display = "block";
+        } else {
+            newCategoryInput.style.display = "none";
+            document.getElementById("new_category_name").value = "";
+            document.getElementById("new_category_description").value = "";
+        }
+
+        // Activer/désactiver les options de sous-catégorie en fonction de la catégorie sélectionnée
+        var selectedCategoryId = select.value;
+        var subCategoryOptions = document.querySelectorAll('.sub-category-option');
+        for (const option of subCategoryOptions) {
+            const optionCategory = option.dataset.category;
+            option.disabled = optionCategory !== selectedCategoryId && optionCategory !== "";
+        }
+    }
+
+    function handleSubCategoryChange(select) {
+        var newSubCategoryInput = document.getElementById("new_sub_category_input");
+        var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
+
+        if (select.value === "new") {
+            newSubCategoryInput.style.display = "block";
+        } else {
+            newSubCategoryInput.style.display = "none";
+            document.getElementById("new_sub_category_name").value = "";
+            document.getElementById("new_sub_category_description").value = "";
+        }
+    }
+</script>
+
+{% endblock %}
