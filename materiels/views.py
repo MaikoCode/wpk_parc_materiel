@@ -7,6 +7,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .forms import MaterielUpdateForm  # Use the updated form for the update view
 from django.http import JsonResponse
+from fournisseur.models import Fournisseur
+
 import json
 
 
@@ -14,7 +16,8 @@ class MaterielListView(View):
     def get(self, request):
         categories = Categorie.objects.all()
         sub_categories = SousCategorie.objects.all()
-        
+        fournisseurs = Fournisseur.objects.all()
+
         # Convertir les données en JSON
         categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
         sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory, 'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
@@ -26,6 +29,7 @@ class MaterielListView(View):
             'form': form,
             'categories_json': json.dumps(categories_json),
             'sub_categories_json': json.dumps(sub_categories_json),
+            'fournisseurs': fournisseurs,
         }
         return render(request, 'materiels.html', context)
 

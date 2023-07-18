@@ -1,5 +1,5 @@
 from django.db import models
-
+from fournisseur.models import Fournisseur
 class Categorie(models.Model):
     idCategory = models.AutoField(primary_key=True)
     nomCategory = models.CharField(max_length=100)
@@ -16,4 +16,5 @@ class Materiel(models.Model):
     nomMateriel = models.CharField(max_length=100)
     NumSerie = models.CharField(max_length=130)
     description = models.CharField(max_length=500)
+    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.SET_DEFAULT, default=1)
     sous_categorie = models.ForeignKey(SousCategorie, on_delete=models.SET_DEFAULT, default=1)
