@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'employe',
     'materiels',
     'fournisseur',
+    'mouvementmateriels',
+    'pannes',
    
 
 ]

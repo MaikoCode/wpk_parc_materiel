@@ -15,7 +15,7 @@
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0">Liste des employés</h1>
-    <button type="button" class="btn btn-primary col-2" data-toggle="modal" data-target="#employeeModal">Ajouter un employé</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#employeeModal">Ajouter un employé</button>
 </div>
 
 <!-- Modal-->
@@ -119,6 +119,12 @@
                           <!-- Delete Icon -->
                           <a href="#" data-toggle="modal" data-target="#deleteConfirmationModal-{{ emp.idEmploye }}">
                             <i class="fas fa-trash" style="color: red;"></i>
+                          </a>
+                          &nbsp;
+                          &nbsp;
+                          <!-- see icon -->
+                          <a href="{% url 'employee_mouvement_history' emp.idEmploye %}">
+                            <i class="fas fa-eye" style="color: blue;"></i> <!-- Replace "fas fa-eye" with the class of your desired icon font -->
                           </a>
                       </td>
                     </tr>

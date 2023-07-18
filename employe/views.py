@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 
 from . import forms
 
+from mouvementmateriels.models import MouvementMateriel
 
 # Create your views here.
 def employes(request):
@@ -40,7 +41,7 @@ def employes(request):
 
     # = Employe.objects.order_by('idEmploye').all()
 
-    page = Paginator(employes, 1)
+    page = Paginator(employes, 2)
     page_liste = request.GET.get('page')
     page = page.get_page(page_liste)  
     return render(request, 'index.html', {'page': page, 'formEmp': formEmp}) 
@@ -87,3 +88,10 @@ def get_filtered_employes(search_query):
         ).order_by('idEmploye')
     else:
         return Employe.objects.all().order_by('idEmploye')
+
+
+def employee_mouvement_history(request, idEmploye):
+    employe = Employe.objects.get(idEmploye=idEmploye)
+    mouvements = MouvementMateriel.objects.filter(employe=employe)
+ 
+    return render(request, 'historique_employe.html', {'employe': employe, 'mouvements': mouvements })

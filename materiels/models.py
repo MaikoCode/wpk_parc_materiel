@@ -18,3 +18,5 @@ class Materiel(models.Model):
     description = models.CharField(max_length=500)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.SET_DEFAULT, default=1)
     sous_categorie = models.ForeignKey(SousCategorie, on_delete=models.SET_DEFAULT, default=1)
+    is_taken = models.BooleanField(default=False)
+    en_panne = models.BooleanField(default=False)
