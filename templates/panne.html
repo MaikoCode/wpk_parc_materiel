@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success alert-dismissible">
+      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      <strong>Success!</strong> {{ message }}.
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0">Les pannes en cours</h1>    
+</div>
+
+<div class="card shadow mb-4">
+
+     <!-- Search Form -->
+<div class="pt-3 pl-3 d-flex justify-content-between">
+    <div class="col-md-8">
+        <form method="get" action="{% url 'pannes' %}">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search_query" placeholder="Search for pannes..." value="{{ search_query|default:'' }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                {% if search_query %}
+                <div class="input-group-append">
+                    <a class="btn btn-danger" href="{% url 'pannes' %}">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- bouton qui déclenche le modal d'historique des pannes -->
+    <div class="col-md-4 text-right">
+        <a href="{% url 'pannes_csv' %}" class="btn btn-info">
+            Historique des pannes
+        </a>
+    </div>
+    
+</div>
+<!-- End Search Form -->
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Nom du matériel</th>
+                        <th>Date de la panne</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for panne in pannes %}
+                        <tr>
+                            <td>{{ panne.materiel.nomMateriel }}</td>
+                            <td>{{ panne.date_panne }}</td>
+                            <td>
+                                <form method="POST" class="toggle-form" action="{% url 'toggle_panne' panne.id %}">
+                                    {% csrf_token %}
+                                    <label class="switch">
+                                        <input type="checkbox" class="toggle-checkbox" name="panne_status" value="{{ panne.resolue }}" {% if not panne.resolue %}checked{% endif %} data-panne-id="{{ panne.id }}">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </form>
+                            </td>
+                            <td>
+                                <!-- bouton qui déclenche le modal -->
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#panneDetailsModal-{{ panne.id }}">
+                                    Détails
+                                </button>
+                            </td>
+                        </tr>
+
+                       <!-- Modal pour les détails de la panne -->
+<div class="modal fade" id="panneDetailsModal-{{ panne.id }}" tabindex="-1" role="dialog" aria-labelledby="panneDetailsModalLabel-{{ panne.id }}" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="panneDetailsModalLabel-{{ panne.id }}">Détails de la panne</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Contenu du modal avec plus de détails sur la panne -->
+              <h6 class="font-weight-bold">Nom du matériel: </h6>
+              <p>{{ panne.materiel.nomMateriel }}</p>
+              <h6 class="font-weight-bold">Numéro de série: </h6>
+              <p>{{ panne.materiel.NumSerie }}</p>
+              <h6 class="font-weight-bold">Date de la panne: </h6>
+              <p>{{ panne.date_panne }}</p>
+              <h6 class="font-weight-bold">Description de la panne: </h6>
+              <p>{{ panne.description }}</p>
+              <h6 class="font-weight-bold">Résolue: </h6>
+              <p>{% if panne.resolue %}Oui{% else %}Non{% endif %}</p>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+          </div>
+      </div>
+  </div>
+</div>
+<!--End modal-->
+
+                        <!-- Modal de confirmation -->
+                        <div class="modal fade" id="toggleConfirmationModal-{{ panne.id }}" tabindex="-1" role="dialog" aria-labelledby="toggleConfirmationModalLabel-{{ panne.id }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="toggleConfirmationModalLabel-{{ panne.id }}">Confirmer la résolution de la panne</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir marquer cette panne comme résolue ?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" id="cancel-toggle-{{ panne.id }}" data-dismiss="modal">Annuler</button>
+                                        <button type="button" class="btn btn-success" id="confirm-toggle-{{ panne.id }}">Confirmer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--End modal-->
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js_panne %}
+<script>
+  let checkboxes = document.querySelectorAll('.toggle-checkbox');
+
+  checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', (event) => {
+          let modal = new bootstrap.Modal(document.querySelector('#toggleConfirmationModal-' + event.target.getAttribute('data-panne-id')), {});
+          let submitBtn = document.querySelector('#confirm-toggle-' + event.target.getAttribute('data-panne-id'));
+          let cancelBtn = document.querySelector('#cancel-toggle-' + event.target.getAttribute('data-panne-id'));
+          let form = event.target.closest('.toggle-form');
+
+          submitBtn.onclick = function () {
+              form.submit();
+          };
+
+          cancelBtn.onclick = function () {
+              event.target.checked = !event.target.checked;
+          };
+
+          modal.show();
+      });
+  });
+</script>
+{% endblock %}
