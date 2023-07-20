@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags %}
+      {% if message.tags == 'error' %}
+        <div class="alert alert-danger alert-dismissible">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>{{ message.tags|capfirst }}!</strong> {{ message }}.
+        </div>
+      {% else %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>{{ message.tags|capfirst }}!</strong> {{ message }}.
+        </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0">Liste des mouvements</h1>
+    <button type="button" class="btn btn-primary col-2" data-toggle="modal" data-target="#mouvementModal">Ajouter un mouvement</button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="mouvementModal" tabindex="-1" role="dialog" aria-labelledby="mouvementModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="employeeModalLabel">Ajouter un mouvement</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="dateMouvement">Date Mouvement</label>
+                <input type="date" class="form-control" id="dateMouvement" name="dateMouvement" required>
+            </div>
+            <div class="form-group">
+                <label for="dateRetour">Date Retour</label>
+                <input type="date" class="form-control" id="dateRetour" name="dateRetour">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" class="form-control" id="description" name="description" required>
+            </div>
+            <div class="form-group">
+                <label for="employe">Employé</label>
+                <select class="form-control" id="employe" name="employe">
+                    <option value=" ">Veuillez selectionner un employé</option>
+                    {% for emp in form.employe.field.queryset %}
+                        <option value="{{ emp.pk }}">{{ emp.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="materiel">Matériel</label>
+                <select class="form-control" id="materiel" name="materiel">
+                    <option value=" ">Veuillez selectionner un matériel</option>
+                    {% for mat in form.materiel.field.queryset %}
+                        <option value="{{ mat.pk }}">{{ mat.nomMateriel }} - {{ mat.NumSerie }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- End modal -->
+
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+    </div>
+    <div class="card-body">
+      <!-- Search Form -->
+      <form method="get" action="">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search_query" placeholder="Rechercher un mouvement...">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </form>
+    <!-- End Search Form -->
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID mouvement</th>
+                        <th>Date mouvement</th>
+                        <th>Date retour</th>
+                        <th>Nom Employé</th>
+                        <th>N° Série matériel</th>
+                        <th>Nom Matériel</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mouvement in page.object_list %}
+                    <tr>
+                        <td>{{ mouvement.idMouvement  }}</td>
+                        <td>{{ mouvement.dateMouvement|date:"Y-m-d" }}</td>
+                        {% if mouvement.dateRetour is None %}
+                        <td>Pas encore</td>
+                        {% else %}
+                        <td>{{ mouvement.dateRetour|date:"Y-m-d" }}</td>
+                        {% endif %}
+                        <td>{{ mouvement.employe.nom }}</td>
+                        <td>{{ mouvement.materiel.NumSerie }}</td>
+                        <td>{{ mouvement.materiel.nomMateriel }}</td>
+                        <td>{{ mouvement.description }}</td>
+                        <td>
+                          <!-- Edit Icon -->
+                          <a href="#" data-toggle="modal" data-target="#editModal-{{ mouvement.idMouvement }}">
+                              <i class="fas fa-edit"></i>
+                          </a>
+                          &nbsp;
+                          &nbsp;
+                          <!-- Delete Icon -->
+                          <a href="#" data-toggle="modal" data-target="#deleteConfirmationModal-{{ mouvement.idMouvement }}">
+                              <i class="fas fa-trash" style="color: red;"></i>
+                          </a>
+                        </td>
+
+                        <!-- Delete Confirmation Modal -->
+                        <div class="modal fade" id="deleteConfirmationModal-{{ mouvement.idMouvement }}" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel-{{ mouvement.idMouvement }}" aria-hidden="true">
+                          <!-- Modal content for delete confirmation -->
+                          <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteConfirmationModalLabel-{{ mouvement.idMouvement }}">Supprimer le mouvement</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Etes vous sure de supprimer le mouvement de l'id: {{ mouvement.idMouvement}}?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <a href="{% url 'delete_mouvement' mouvement.idMouvement %}" class="btn btn-danger">Delete</a>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- End Delete Confirmation Modal -->
+
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editModal-{{ mouvement.idMouvement }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel-{{ mouvement.idMouvement }}" aria-hidden="true">
+                          <!-- Modal content for edit -->
+                          <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editMouvementModalLabel">Modifier le mouvement</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="post" action="{% url 'edit_mouvement' mouvement.idMouvement %}">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="dateMouvement">Date Mouvement</label>
+                                            <input type="date" class="form-control" id="dateMouvement" name="dateMouvement" value="{{ mouvement.dateMouvement|date:'Y-m-d' }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="dateRetour">Date Retour</label>
+                                            <input type="date" class="form-control" id="dateRetour" name="dateRetour" value="{{ mouvement.dateRetour|date:'Y-m-d' }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="description">Description</label>
+                                            <input type="text" class="form-control" id="description" name="description" value="{{ mouvement.description }}" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="employe">Employé</label>
+                                            <select class="form-control" id="employe" name="employe">
+                                                <option value=" ">Veuillez sélectionner un employé</option>
+                                                {% for emp in form.employe.field.queryset %}
+                                                    <option value="{{ emp.pk }}" {% if emp.pk == mouvement.employe.pk %}selected{% endif %}>{{ emp.nom }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                          <label for="materiel">Matériel</label>
+                                          <select class="form-control" id="materiel" name="materiel">
+                                              <option value=" ">Veuillez sélectionner un matériel</option>
+                                              {% for mat in form.materiel.field.queryset %}
+                                                  <option value="{{ mat.pk }}" {% if mat.pk == mouvement.materiel.pk %}selected{% endif %}>{{ mat.nomMateriel }} - {{ mat.NumSerie }}</option>
+                                              {% endfor %}
+                                          </select>
+                                      </div>
+                                      
+                                      
+                                      
+                    
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Modifier</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        <!-- End Edit Modal -->
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- pagination -->
+            <div class="container">
+              <div class="row my-5">
+                <div class="col-md-4">
+                  <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
+                  <nav aria-label="...">
+                    <ul class="pagination">
+                      <li class="page-item">
+                        {% if page.has_previous %}
+                        <a class="page-link" href="{% url 'mouvements' %}?page={{ page.previous_page_number }}">Previous</a>
+                        {% endif %}
+                      </li>
+
+                      {% for num_page in page.paginator.page_range %}
+                        {% if page.number == num_page %}
+                        <li class="page-item active" aria-current="page">
+                          <a class="page-link" href="{% url 'mouvements' %}?page={{ num_page }}">{{ num_page }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item" aria-current="page">
+                          <a class="page-link" href="{% url 'mouvements' %}?page={{ num_page }}">{{ num_page }}</a>
+                        </li>
+                        {% endif %}
+
+                      {% endfor %}
+
+                      <li class="page-item">
+                        {% if page.has_next %}
+                        <a class="page-link" href="{% url 'mouvements' %}?page={{ page.next_page_number }}">Next</a>
+                        {% endif %}
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <!-- end pagination -->
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
