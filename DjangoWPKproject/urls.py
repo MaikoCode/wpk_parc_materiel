@@ -7,6 +7,8 @@ import fournisseur.views
 from materiels.views import MaterielListView
 import materiels.views 
 import mouvementmateriels.views
+import dashboardAdmin.views
+import dashboardUser.views
 import pannes.views 
 
 urlpatterns = [
@@ -14,7 +16,9 @@ urlpatterns = [
     path('', authentication.views.login_page, name='login'),
     path('login', authentication.views.login_page, name='login'),
     path('logout/', authentication.views.logout_user, name='logout'),
-    path('home/',  authentication.views.home, name='home'),
+    path('home/',  dashboardAdmin.views.dashboardView, name='home'),
+    path('home_user/',  dashboardUser.views.dashboardUserView, name='home_user'),
+
 
     path('employes/',  employe.views.employes, name='employes'),
     #employees crud

@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'fournisseur',
     'mouvementmateriels',
     'pannes',
+    'dashboardAdmin',
+    'dashboardUser',
    
 
 ]

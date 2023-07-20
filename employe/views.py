@@ -9,8 +9,10 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 
 from . import forms
-
+from authentication.models import User
 from mouvementmateriels.models import MouvementMateriel
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 # Create your views here.
 def employes(request):
@@ -27,6 +29,7 @@ def employes(request):
                 dateEmbauche=formEmpData.cleaned_data['dateEmbauche'],
                 email=formEmpData.cleaned_data['email']
             )
+            
             employee.save()
             messages.success(request, 'Un nouveau employé est ajouté.')
             return redirect('employes')
@@ -47,6 +50,17 @@ def employes(request):
     return render(request, 'index.html', {'page': page, 'formEmp': formEmp}) 
 
     # return render(request, 'index.html', {'employes': employes, 'formEmp': formEmp}) 
+
+# Définition de la fonction qui sera exécutée lorsqu'un employé est enregistré
+@receiver(post_save, sender=Employe)
+def create_user_for_employe(sender, instance, created, **kwargs):
+    if created:
+        # Utilisez le nom de l'employé comme mot de passe par défaut
+        username = instance.email
+        password = instance.nom  # Utilisez le nom de l'employé comme mot de passe
+        user = User.objects.create(username=username, role=User.USER, employe=instance)
+        user.set_password(password)  # Définir le mot de passe pour le nouvel utilisateur
+        user.save()
 
 
 
