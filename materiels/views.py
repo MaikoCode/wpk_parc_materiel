@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.generic.base import View
-from .models import Materiel, Categorie, SousCategorie
+from .models import Materiel, Categorie, SousCategorie,DemandeMateriel
 from .forms import MaterielForm
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -8,8 +8,8 @@ from django.urls import reverse
 from .forms import MaterielUpdateForm  # Use the updated form for the update view
 from django.http import JsonResponse
 from fournisseur.models import Fournisseur
-
 import json
+from .forms import DemandeMaterielForm
 
 
 class MaterielListView(View):
@@ -17,11 +17,9 @@ class MaterielListView(View):
         categories = Categorie.objects.all()
         sub_categories = SousCategorie.objects.all()
         fournisseurs = Fournisseur.objects.all()
-
         # Convertir les données en JSON
         categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
         sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory, 'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
-
         form = MaterielForm()
         context = {
             'categories': categories,
@@ -42,7 +40,6 @@ class MaterielListView(View):
             materiel_description = form.cleaned_data['materiel_description']
             category_id = form.cleaned_data['categorie']
             sub_category_id = form.cleaned_data['sub_category']
-
             # Vérifier si une nouvelle catégorie a été spécifiée
             if category_id == 'new':
                 nom_category = form.cleaned_data['new_category_name']
@@ -50,7 +47,6 @@ class MaterielListView(View):
                 categorie = Categorie.objects.create(nomCategory=nom_category, description=description_category)
             else:
                 categorie = Categorie.objects.get(idCategory=category_id)
-
             # Vérifier si une nouvelle sous-catégorie a été spécifiée
             if sub_category_id == 'new':
                 nom_sous_category = form.cleaned_data['new_sub_category_name']
@@ -84,25 +80,75 @@ def delete_materiel(request, materiel_id):
     return redirect(reverse('materiel_list'))
 
 
-
-
-
-
 def edit_materiel(request, materiel_id):
     materiel = Materiel.objects.get(idMateriel=materiel_id)
     print(materiel.description)
 
     if request.method == 'POST':
         form = MaterielUpdateForm(request.POST)
-
         if form.is_valid():
             # Update the employee details
             materiel.nomMateriel = form.cleaned_data['materiel_name']
             materiel.NumSerie = form.cleaned_data['num_serie']
             materiel.description = form.cleaned_data['materiel_description']
-            
             materiel.save()
             print("Le materiel est  modifie " )
             messages.success(request, "Les infos de l'employé " + materiel.nomMateriel  +" sont modifiés")
-    
     return redirect('materiel_list')
+
+
+
+
+# Utilisez la classe basée sur les vues pour votre vue MaterielListView_User
+class MaterielListView_User(View):
+    def get(self, request):
+        categories = Categorie.objects.all()
+        sub_categories = SousCategorie.objects.all()
+        fournisseurs = Fournisseur.objects.all()
+        materiels = Materiel.objects.all()
+        
+        # Convertir les données en JSON
+        categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
+        sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory, 'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
+        form = MaterielForm()
+        context = {
+            'categories': categories,
+            'sub_categories': sub_categories,
+            'form': form,
+            'categories_json': json.dumps(categories_json),
+            'sub_categories_json': json.dumps(sub_categories_json),
+            'fournisseurs': fournisseurs,
+        }
+        return render(request, 'materiels_user.html', context)
+
+def demander_materiel(request):
+    if request.method == 'POST':
+        form = DemandeMaterielForm(request.POST)
+        if form.is_valid():
+            # Récupérer les données du formulaire
+            date_debut = form.cleaned_data['date_debut']
+            description = form.cleaned_data['description']
+            materiel_id = form.cleaned_data['materiel']
+            demandeur_id = form.cleaned_data['demandeur']
+            
+            # Traiter la demande et enregistrer dans la base de données
+            # (vous devez implémenter cette partie en fonction de votre modèle)
+            
+            # Exemple : Créer un nouvel objet DemandeMateriel
+            nouvelle_demande = DemandeMateriel.objects.create(
+                date_debut=date_debut,
+                description=description,
+                materiel=materiel_id,
+                demandeur=demandeur_id
+            )
+            nouvelle_demande.save()
+
+            # Rediriger l'utilisateur vers la page de confirmation ou une autre vue appropriée
+            messages.success(request, 'La demande a été envoyée avec succès.')
+            return redirect('materiels_user')
+    else:
+        # Si la méthode est GET, afficher le formulaire vide
+        form = DemandeMaterielForm()
+
+    messages.success(request, 'La demande a echouée.')
+    return redirect('materiels_user')

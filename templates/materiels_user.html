@@ -1,0 +1,204 @@
+{% extends 'baseUser.html' %}
+{% load custom_filters %}
+
+{% load static %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Liste materiel Wpk</h1>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-header">
+            Catégories
+        </div>
+        <div class="card-body">
+            {% for categorie in categories %}
+            <div class="category-row" data-toggle="collapse" data-target="#sous-categorie-{{ categorie.idCategory }}"
+                aria-expanded="false" style="background-color: #3e98d1; color: white; height: 40px; 
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                cursor: pointer;
+                margin-bottom: 0.5%;">
+                {{ categorie.nomCategory }} <span class="collapse-indicator">&#x25BC;</span>
+            </div>
+            <div id="sous-categorie-{{ categorie.idCategory }}" class="collapse">
+                {% for sous_categorie in categorie.souscategorie_set.all %}
+                <div class="sub-category-row" data-toggle="collapse"
+                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false" style="background-color: #f7f7f7; margin-left: 2%;margin-bottom: 1%; width: 98%;     height: 30px; 
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 10px 20px;
+                    cursor: pointer;">
+                    {{ sous_categorie.nomSousCategory }} <span class="collapse-indicator">&#x25BC;</span>
+                </div>
+                <div id="materiel-{{ sous_categorie.idSousCategorie }}" class="collapse">
+                    <div class="list-group" style="background-color: #f7f7f7; margin-left: 4%; width: 96%;">
+
+                        {% for materiel in sous_categorie.materiel_set.all %}
+                        <div class="material-row" style=" padding: 10px 20px;
+                              border-bottom: 1px solid #ccc;
+                              margin-bottom: 1%;">
+                            <div class="d-flex flex-wrap align-items-center">
+                                <div class="flex-grow-1">
+                                    <strong>Nom:</strong> {{ materiel.nomMateriel }}<br>
+                                    <strong>Numéro de série:</strong> {{ materiel.NumSerie }}<br>
+                                    <strong>Description:</strong> {{ materiel.description }}
+                                </div>
+                                <div>
+                                    {% if not materiel.is_taken %}
+                                    
+                                    {% if not request.user.id|exist_demande:materiel.idMateriel %}
+
+                                    
+                                    <!-- Bouton pour demander le matériel -->
+                                    <button type="button" class="btn btn-link add-button" data-toggle="modal"
+                                        data-target="#addModal-{{ materiel.idMateriel }}">
+                                        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                                        Demander
+                                    </button>
+                                    {% else %}
+                                    <span>Vous avez déjà soumis une demande pour ce matériel.</span>
+                                    {% endif %}
+                                    {% else %}
+                                    <span>Ce matériel est actuellement indisponible.</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+
+
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% for categorie in categories %}
+{% for sous_categorie in categorie.souscategorie_set.all %}
+{% for materiel in sous_categorie.materiel_set.all %}
+
+
+<!-- add demande Modal -->
+<!-- add demande Modal -->
+<div class="modal fade" id="addModal-{{ materiel.idMateriel }}" tabindex="-1" role="dialog"
+    aria-labelledby="addModalLabel-{{ materiel.idMateriel }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel-{{ materiel.idMateriel }}">Demander {{ materiel.nomMateriel }}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'demander_materiel'  %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="date_debut">Date de début d'utilisation :</label>
+                        <input type="date" class="form-control" id="date_debut" name="date_debut" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description de la demande :</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    <input type="hidden" id="materiel " name="materiel" value="{{ materiel.idMateriel }}">
+                    <input type="hidden" id="demandeur" name="demandeur" value="{{ request.user.id }}">
+                    <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // Gérer le basculement de la flèche de catégorie lors du clic
+    $('.category-row').click(function (event) {
+        event.stopPropagation();
+        $(this).find('.collapse-indicator').toggleClass('collapsed');
+        var target = $(this).data('target');
+        $(target).toggleClass('show');
+    });
+
+    $('.sub-category-row').click(function (event) {
+        event.stopPropagation();
+        $(this).find('.collapse-indicator').toggleClass('collapsed');
+        var target = $(this).data('target');
+        $(target).toggleClass('show');
+    });
+
+    function handleCategoryChange(select) {
+        var newCategoryInput = document.getElementById("new_category_input");
+        var newCategoryOption = document.querySelector("#categorie option[value='new']");
+
+        if (select.value === "new") {
+            newCategoryInput.style.display = "block";
+        } else {
+            newCategoryInput.style.display = "none";
+            document.getElementById("new_category_name").value = "";
+            document.getElementById("new_category_description").value = "";
+        }
+
+        // Activer/désactiver les options de sous-catégorie en fonction de la catégorie sélectionnée
+        var selectedCategoryId = select.value;
+        var subCategoryOptions = document.querySelectorAll('.sub-category-option');
+        for (const option of subCategoryOptions) {
+            const optionCategory = option.dataset.category;
+            option.disabled = optionCategory !== selectedCategoryId && optionCategory !== "";
+        }
+    }
+
+    function handleSubCategoryChange(select) {
+        var newSubCategoryInput = document.getElementById("new_sub_category_input");
+        var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
+
+        if (select.value === "new") {
+            newSubCategoryInput.style.display = "block";
+        } else {
+            newSubCategoryInput.style.display = "none";
+            document.getElementById("new_sub_category_name").value = "";
+            document.getElementById("new_sub_category_description").value = "";
+        }
+    }
+
+</script>
+
+{% endblock %}

@@ -1,4 +1,5 @@
 from django.db import models
+from employe.models import Employe
 from fournisseur.models import Fournisseur
 class Categorie(models.Model):
     idCategory = models.AutoField(primary_key=True)
@@ -20,3 +21,23 @@ class Materiel(models.Model):
     sous_categorie = models.ForeignKey(SousCategorie, on_delete=models.SET_DEFAULT, default=1)
     is_taken = models.BooleanField(default=False)
     en_panne = models.BooleanField(default=False)
+
+
+class DemandeMateriel(models.Model):
+    demandeur = models.ForeignKey(Employe, on_delete=models.CASCADE)
+    materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
+    date_debut = models.DateField()
+    description = models.TextField()
+    status = models.CharField(default="pas encore traite")
+
+
+
+    def __str__(self):
+        return f"{self.employe} - {self.materiel} - {self.date_debut_utilisation}"
+
+    def get_demande_status_for_demandeur(self, demandeur_id):
+        try:
+            demande = DemandeMateriel.objects.get(materiel=self.materiel, demandeur_id=demandeur_id)
+            return demande.status
+        except DemandeMateriel.DoesNotExist:
+            return None

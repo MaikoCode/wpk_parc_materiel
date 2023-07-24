@@ -12,5 +12,6 @@ class MouvementMateriel(models.Model):
     description = models.CharField(max_length=200)
     employe = models.ForeignKey(Employe, on_delete=models.CASCADE)
     materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
-    def _str_(self):
+    actionType = models.CharField(max_length=30, default="acquisition")
+    def str(self):
         return f"Mouvement ID: {self.id}, Date: {self.dateMouvement}, Employe: {self.employe.nom}, Materiel: {self.materiel.nomMateriel}"
