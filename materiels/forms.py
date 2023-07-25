@@ -1,5 +1,7 @@
 from django import forms
 from .models import Materiel, Categorie, SousCategorie
+from .models import DemandeMateriel
+
 
 class MaterielForm(forms.ModelForm):
     materiel_name = forms.CharField(label='Nom du matériel', max_length=100)
@@ -26,3 +28,13 @@ class MaterielUpdateForm(forms.ModelForm):
     class Meta:
         model = Materiel
         fields = ['materiel_name', 'num_serie', 'materiel_description']
+
+
+class DemandeMaterielForm(forms.ModelForm):
+    class Meta:
+        model = DemandeMateriel
+        fields = ['date_debut', 'description', 'materiel', 'demandeur']
+        widgets = {
+            'demandeur': forms.HiddenInput(),
+            'materiel': forms.HiddenInput(),
+        }

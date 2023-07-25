@@ -5,16 +5,22 @@ import authentication.views
 import employe.views
 import fournisseur.views
 from materiels.views import MaterielListView
+from materiels.views import MaterielListView_User
 import materiels.views 
 import mouvementmateriels.views
+import dashboardAdmin.views
+import dashboardUser.views
 import pannes.views 
+import facture.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', authentication.views.login_page, name='login'),
     path('login', authentication.views.login_page, name='login'),
     path('logout/', authentication.views.logout_user, name='logout'),
-    path('home/',  authentication.views.home, name='home'),
+    path('home/',  dashboardAdmin.views.dashboardView, name='home'),
+    path('home_user/',  dashboardUser.views.dashboardUserView, name='home_user'),
+
 
     path('employes/',  employe.views.employes, name='employes'),
     #employees crud
@@ -29,14 +35,22 @@ urlpatterns = [
     path('materiel/', MaterielListView.as_view(), name='materiel_list'),
     path('materiel/<int:materiel_id>/delete/', materiels.views.delete_materiel, name='delete_materiel'),
     path('materiel/<int:materiel_id>/edit/', materiels.views.edit_materiel, name='edit_materiel'),
+    path('materiels_user/', MaterielListView_User.as_view(), name='materiels_user'),
 
-    #mouvements materiels
+
+   #mouvements materiels
     path('mouvements/',mouvementmateriels.views.mouvements, name='mouvements'),
     path('mouvement/<int:idMouvement>/delete/', mouvementmateriels.views.delete_mouvement, name='delete_mouvement'),
     path('mouvement/<int:idMouvement>/edit/',mouvementmateriels.views.edit_mouvement, name='edit_mouvement'),
-    
+    path('mouvement/<int:idMouvement>/affect',mouvementmateriels.views.affecter_mouvement,name='affecter_mouvement'),
     
     path('pannes/', pannes.views.pannes_page, name="pannes"),
     path('pannes/toggle/<int:panne_id>/', pannes.views.toggle_panne, name='toggle_panne'),
     path('pannes/csv/', pannes.views.download_pannes_csv, name='pannes_csv'),
+
+
+    path('demander_materiel/', materiels.views.demander_materiel, name='demander_materiel'),
+    #facture
+    path('facture/', facture.views.home, name='facture'),
+
 ]

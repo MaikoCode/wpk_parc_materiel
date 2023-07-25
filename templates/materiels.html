@@ -65,7 +65,8 @@
 
                         <div class="form-group">
                             <label for="sub_category">Sous-catégorie</label>
-                            <select id="sub_category" name="sub_category" class="form-control" onchange="handleSubCategoryChange(this)">
+                            <select id="sub_category" name="sub_category" class="form-control"
+                                onchange="handleSubCategoryChange(this)">
                                 <option value="" selected>Choisir une sous-catégorie</option>
                                 {% for sous_category in sub_categories %}
                                 <option value="{{ sous_category.idSousCategorie }}" class="sub-category-option"
@@ -188,13 +189,17 @@
                                         data-target="#editModal-{{ materiel.idMateriel }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    &nbsp;
-                                    &nbsp;
+
                                     <!-- Supprimer Icon -->
                                     <button type="button" class="btn btn-link delete-button" data-toggle="modal"
                                         data-target="#deleteConfirmationModal-{{ materiel.idMateriel }}"
                                         style="color: red;">
                                         <i class="fas fa-trash"></i>
+                                    </button>
+                                    <!-- Bouton pour afficher l'historique d'utilisation du matériel -->
+                                    <button type="button" class="btn btn-link history-button" data-toggle="modal"
+                                        data-target="#historyModal-{{ materiel.idMateriel }}">
+                                        <i class="fas fa-history"></i>
                                     </button>
                                 </div>
                             </div>
@@ -284,6 +289,49 @@
     </div>
 </div>
 
+<!-- Modal pour afficher l'historique d'utilisation du matériel -->
+<div class="modal fade" id="historyModal-{{ materiel.idMateriel }}" tabindex="-1" role="dialog"
+    aria-labelledby="historyModalLabel-{{ materiel.idMateriel }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel-{{ materiel.idMateriel }}">Historique d'utilisation du {{ materiel.nomMateriel }} </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Employé</th>
+                                <th>Date du debut </th>
+                                <th>Date de retour</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mouvement in materiel.mouvementmateriel_set.all %}
+                            <tr>
+                                <td>{{ mouvement.employe.nom }}</td>
+                                <td>{{ mouvement.dateMouvement }}</td>
+                                <td>{% if mouvement.dateRetour %}{{ mouvement.dateRetour }}{% else %}N/A{% endif %}</td>
+                                <td>{{ mouvement.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endfor %}
 {% endfor %}
 {% endfor %}
@@ -331,18 +379,18 @@
     }
 
     function handleSubCategoryChange(select) {
-    var newSubCategoryInput = document.getElementById("new_sub_category_input");
-    var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
+        var newSubCategoryInput = document.getElementById("new_sub_category_input");
+        var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
 
-    if (select.value === "new") {
-        newSubCategoryInput.style.display = "block";
-    } else {
-        newSubCategoryInput.style.display = "none";
-        document.getElementById("new_sub_category_name").value = "";
-        document.getElementById("new_sub_category_description").value = "";
+        if (select.value === "new") {
+            newSubCategoryInput.style.display = "block";
+        } else {
+            newSubCategoryInput.style.display = "none";
+            document.getElementById("new_sub_category_name").value = "";
+            document.getElementById("new_sub_category_description").value = "";
+        }
     }
-}
-    
+
 </script>
 
 {% endblock %}

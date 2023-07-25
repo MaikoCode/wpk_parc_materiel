@@ -6,12 +6,12 @@ from employe.models import Employe
 
 
 class User(AbstractUser):
-    CREATOR = 'CREATOR'
-    SUBSCRIBER = 'SUBSCRIBER'
+    ADMIN = 'ADMIN'
+    USER = 'USER'
 
     ROLE_CHOICES = (
-        (CREATOR, 'Créateur'),
-        (SUBSCRIBER, 'Abonné'),
+        (ADMIN, 'Admin'),
+        (USER, 'user'),
     )
     employe = models.OneToOneField(Employe, on_delete=models.CASCADE, null=True)
     profile_photo = models.ImageField(verbose_name='Photo de profil')

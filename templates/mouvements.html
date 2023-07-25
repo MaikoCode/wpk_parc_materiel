@@ -24,7 +24,7 @@
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0">Liste des mouvements</h1>
-    <button type="button" class="btn btn-primary col-2" data-toggle="modal" data-target="#mouvementModal">Ajouter un mouvement</button>
+    <button type="button" class="btn btn-primary " data-toggle="modal" data-target="#mouvementModal">Ajouter un mouvement</button>
 </div>
 
 <!-- Modal -->
@@ -91,7 +91,7 @@
     </div>
     <div class="card-body">
       <!-- Search Form -->
-      <form method="get" action="">
+      <form method="get" action="{% url 'mouvements' %}">
         <div class="row mb-3">
             <div class="col-md-6">
                 <div class="input-group">
@@ -112,7 +112,7 @@
                     <tr>
                         <th>ID mouvement</th>
                         <th>Date mouvement</th>
-                        <th>Date retour</th>
+                        <th>Type</th>
                         <th>Nom Employé</th>
                         <th>N° Série matériel</th>
                         <th>Nom Matériel</th>
@@ -125,11 +125,7 @@
                     <tr>
                         <td>{{ mouvement.idMouvement  }}</td>
                         <td>{{ mouvement.dateMouvement|date:"Y-m-d" }}</td>
-                        {% if mouvement.dateRetour is None %}
-                        <td>Pas encore</td>
-                        {% else %}
-                        <td>{{ mouvement.dateRetour|date:"Y-m-d" }}</td>
-                        {% endif %}
+                        <td>{{ mouvement.actionType }}</td>
                         <td>{{ mouvement.employe.nom }}</td>
                         <td>{{ mouvement.materiel.NumSerie }}</td>
                         <td>{{ mouvement.materiel.nomMateriel }}</td>
@@ -139,13 +135,63 @@
                           <a href="#" data-toggle="modal" data-target="#editModal-{{ mouvement.idMouvement }}">
                               <i class="fas fa-edit"></i>
                           </a>
-                          &nbsp;
-                          &nbsp;
+                          <!-- &nbsp;
+                          &nbsp; -->
                           <!-- Delete Icon -->
                           <a href="#" data-toggle="modal" data-target="#deleteConfirmationModal-{{ mouvement.idMouvement }}">
                               <i class="fas fa-trash" style="color: red;"></i>
                           </a>
+                          <!-- assigner -->
+                          <a href="#" data-toggle="modal" data-target="#assignModal-{{ mouvement.idMouvement }}">
+                            <i class="fas fa-exchange-alt" style="color: green;"></i>
+                          </a>
                         </td>
+                        <!-- Assign Modal -->
+                        <div class="modal fade" id="assignModal-{{ mouvement.idMouvement }}" tabindex="-1" role="dialog" aria-labelledby="assignModalLabel-{{ mouvement.idMouvement }}" aria-hidden="true">
+                          <!-- Modal content for the assign action -->
+                          <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                  <div class="modal-header">
+                                      <h5 class="modal-title" id="assignModalLabel-{{ mouvement.idMouvement }}">Affecter le matériel</h5>
+                                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                          <span aria-hidden="true">&times;</span>
+                                      </button>
+                                  </div>
+                                  <div class="modal-body">
+                                      <!-- Render the AffectationForm here -->
+                                      <form method="post" action="{% url 'affecter_mouvement' mouvement.idMouvement %}">
+                                          {% csrf_token %}
+                                          <div class="form-group">
+                                            <label for="dateMouvement">Date Mouvement</label>
+                                            <input type="date" class="form-control" id="dateMouvement" name="dateMouvement" required>
+                                          </div>
+                                          <div class="form-group">
+                                            <label for="description">Description</label>
+                                            <input type="text" class="form-control" id="description" name="description" required>
+                                          </div>
+                                          <div class="form-group">
+                                            <label for="employe">Employé</label>
+                                            <select class="form-control" id="employe" name="employe">
+                                                <option value=" ">Veuillez sélectionner un employé</option>
+                                                {% for emp in form.employe.field.queryset %}
+                                                    <option value="{{ emp.pk }}">{{ emp.nom }}</option>
+                                                {% endfor %}
+                                                
+                                            </select>
+                                        </div>
+
+                                          <div class="modal-footer">
+                                              <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                              <button type="submit" class="btn btn-primary">Affecter</button>
+                                          </div>
+                                      </form>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+                        <!-- End assign modal-->
+
+
 
                         <!-- Delete Confirmation Modal -->
                         <div class="modal fade" id="deleteConfirmationModal-{{ mouvement.idMouvement }}" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel-{{ mouvement.idMouvement }}" aria-hidden="true">
@@ -198,21 +244,23 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="employe">Employé</label>
-                                            <select class="form-control" id="employe" name="employe">
+                                            <select class="form-control" id="employe" name="employe" disabled>
                                                 <option value=" ">Veuillez sélectionner un employé</option>
                                                 {% for emp in form.employe.field.queryset %}
                                                     <option value="{{ emp.pk }}" {% if emp.pk == mouvement.employe.pk %}selected{% endif %}>{{ emp.nom }}</option>
                                                 {% endfor %}
                                             </select>
+                                            <input type="hidden" name="employe" value="{{ mouvement.employe.pk }}">
                                         </div>
                                         <div class="form-group">
                                           <label for="materiel">Matériel</label>
-                                          <select class="form-control" id="materiel" name="materiel">
+                                          <select class="form-control" id="materiel" name="materiel" disabled>
                                               <option value=" ">Veuillez sélectionner un matériel</option>
                                               {% for mat in form.materiel.field.queryset %}
                                                   <option value="{{ mat.pk }}" {% if mat.pk == mouvement.materiel.pk %}selected{% endif %}>{{ mat.nomMateriel }} - {{ mat.NumSerie }}</option>
                                               {% endfor %}
                                           </select>
+                                          <input type="hidden" name="materiel" value="{{ mouvement.materiel.pk }}">
                                       </div>
                                       
                                       

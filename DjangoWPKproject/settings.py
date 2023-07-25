@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'fournisseur',
     'mouvementmateriels',
     'pannes',
+    'dashboardAdmin',
+    'dashboardUser',
+    'facture'
    
 
 ]
@@ -71,6 +74,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'custom_filters': 'materiels.templatetags.custom_filters',
+            },
         },
     },
 ]
