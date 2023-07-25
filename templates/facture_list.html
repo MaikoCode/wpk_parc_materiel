@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title">Facture List</h1>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-blue">
+                        <tr>
+                            <th>Fournisseur</th>
+                            <th>Date</th>
+                            <th>Numero</th>
+                            <th>Ville</th>
+                            <th>Montant Total</th>
+                            <th>Details</th>
+                            <th>Facture PDF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for facture in factures %}
+                        <tr>
+                            <td>{{ facture.fournisseur }}</td>
+                            <td>{{ facture.date_facture }}</td>
+                            <td>{{ facture.numero_facture }}</td>
+                            <td>{{ facture.ville }}</td>
+                            <td>{{ facture.montant_total }}</td>
+                            <td>
+                                <!-- Modal trigger link -->
+                                <a href="#" class="btn btn-info" data-toggle="modal" data-target="#modal-{{ facture.idFacture }}">Details</a>
+                            </td>
+                            <td>
+                                {% if facture.facture_pdf %}
+                                <a href="{{ facture.facture_pdf.url }}" class="btn btn-primary" download>Download</a>
+                                {% else %}
+                                No PDF
+                                {% endif %}
+                            </td>
+                           
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals (moved outside the loop) -->
+{% for facture in factures %}
+<div class="modal fade" id="modal-{{ facture.idFacture }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Article Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Article Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Sous-Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ligne in facture.lignefacture_set.all %}
+                        <tr>
+                            <td>{{ ligne.article.nom_article }}</td>
+                            <td>{{ ligne.article.prix_unitaire }}</td>
+                            <td>{{ ligne.quantite }}</td>
+                            <td>{{ ligne.sous_total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

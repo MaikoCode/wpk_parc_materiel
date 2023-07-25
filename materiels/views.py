@@ -10,6 +10,8 @@ from django.http import JsonResponse
 from fournisseur.models import Fournisseur
 import json
 from .forms import DemandeMaterielForm
+from django.views.generic import ListView
+
 
 
 class MaterielListView(View):
@@ -152,3 +154,46 @@ def demander_materiel(request):
 
     messages.success(request, 'La demande a echouée.')
     return redirect('materiels_user')
+
+class Gesion_Demande(ListView):
+    model = DemandeMateriel
+    template_name = 'gestion_demande.html'
+    context_object_name = 'demandes'
+
+    def get_queryset(self):
+        return DemandeMateriel.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        demande_id = request.POST.get('demande_id')
+        action = request.POST.get('action')
+
+        demande = DemandeMateriel.objects.get(id=demande_id)
+
+        if action == 'valider':
+            # Mettre à jour le statut de la demande
+            demande.status = 'Validee'
+            demande.save()
+            messages.success(request, f'Demande {demande.id} validée avec succès.')
+        elif action == 'rejeter':
+            # Mettre à jour le statut de la demande
+            demande.status = 'Rejetee'
+            demande.save()
+            messages.warning(request, f'Demande {demande.id} rejetée.')
+
+        return render(request, self.template_name, {'demandes': self.get_queryset()})
+
+
+
+def accepter_demande(request, demande_id):
+    demande = get_object_or_404(DemandeMateriel, id=demande_id)
+
+    demande.status = "Acceptée"
+    demande.save()
+    return redirect('home')  
+
+def rejeter_demande(request, demande_id):
+    demande = get_object_or_404(DemandeMateriel, id=demande_id)
+
+    demande.status = "Rejetée"
+    demande.save()
+    return redirect('home') 

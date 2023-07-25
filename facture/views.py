@@ -28,7 +28,9 @@ def home(request):
             date_facture=date_facture,
             numero_facture=numero_facture,
             ville=ville,
-            montant_total=montant_total
+            montant_total=montant_total,
+            facture_pdf=request.FILES['facture_pdf'] if 'facture_pdf' in request.FILES else None
+
         )
         # facture.save()
         print('facture founis: ',facture.fournisseur.idFournisseur)
@@ -80,3 +82,7 @@ def home(request):
         # handle GET request, e.g., by rendering a form
         fournisseurs = Fournisseur.objects.all()
         return render(request, 'facture.html', {'fournisseurs': fournisseurs})
+    
+def displayfacture(request):
+    factures = Facture.objects.all()
+    return render(request, 'facture_list.html', {'factures': factures})
