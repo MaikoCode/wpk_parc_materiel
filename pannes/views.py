@@ -6,15 +6,8 @@ from django.views.decorators.http import require_POST
 from django.db.models import Q
 import csv
 from django.http import HttpResponse
-
-
-# @login_required
-# def historique_pannes_page(request):
-#     # Récupérer toutes les pannes, résolues et non résolues
-#     pannes = Panne.objects.all()
-
-#     return render(request, 'historique_pannes.html', {'pannes': pannes})
-
+from django.core.paginator import Paginator
+from .forms import PanneForm
 
 def download_pannes_csv(request):
     pannes = Panne.objects.all()
@@ -31,35 +24,43 @@ def download_pannes_csv(request):
     return response
 
 def pannes_page(request):
-    # Récupérer tous les matériels en panne
     materiels_en_panne = Materiel.objects.filter(en_panne=True)
 
-    # Pour chaque matériel en panne, vérifier s'il y a déjà une panne existante pour ce matériel.
-    # Si ce n'est pas le cas, créer une nouvelle panne.
+    pannes = Panne.objects.none()  # Créez un queryset vide
     for materiel in materiels_en_panne:
-        if not Panne.objects.filter(materiel=materiel, resolue=False).exists():
-            Panne.objects.create(materiel=materiel, description="Description de la panne...")
-            # Apres il faudra remplace description par // description=materiel.description
+        pannes_materiel = Panne.objects.filter(materiel=materiel, resolue=False)
+        pannes = pannes.union(pannes_materiel)  # Combinez les queryset
 
-    # Récupérer la requête de recherche
     search_query = request.GET.get('search_query')
 
     if search_query:
-        # Si une recherche a été effectuée, filtrer les pannes non résolues en fonction de la requête de recherche
-        pannes = Panne.objects.filter(
-            Q(materiel_nomMateriel_icontains=search_query) |  # recherche dans le nom du materiel
-            Q(materiel_NumSerie_icontains=search_query) |  # recherche dans le numéro de série du matériel
-            Q(description__icontains=search_query) |  # recherche dans la description
-            Q(date_panne__icontains=search_query),  # recherche dans la date de la panne
-            resolue=False  # on ne veut que les pannes non résolues
+        pannes = pannes.filter(
+            Q(materiel__nomMateriel__icontains=search_query) |
+            Q(materiel__NumSerie__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(date_panne__icontains=search_query),
+            resolue=False
         )
-    else:
-        # Récupérer toutes les pannes non résolues pour les afficher
-        pannes = Panne.objects.filter(resolue=False)
-        
+
+    paginator = Paginator(pannes, 2)  # Montrer 10 pannes par page
+    page_number = request.GET.get('page')
+    pannes = paginator.get_page(page_number)
+
     pannes_passees = Panne.objects.filter(resolue=True)
 
-    return render(request, 'panne.html', {'pannes': pannes, 'search_query': search_query, 'pannes_passees': pannes_passees})
+    if request.method == 'POST':
+        form = PanneForm(request.POST)
+        if form.is_valid():
+            panne = form.save(commit=False)
+            panne.user = request.user
+            panne.materiel.en_panne = True  # Mettre le matériel en état de panne
+            panne.materiel.save()  # Sauvegarder l'état du matériel
+            panne.save()
+    else:
+        form = PanneForm()
+
+    return render(request, 'panne.html',
+                  {'pannes': pannes, 'search_query': search_query, 'pannes_passees': pannes_passees, 'form': form})
 
 @require_POST
 def toggle_panne(request, panne_id):

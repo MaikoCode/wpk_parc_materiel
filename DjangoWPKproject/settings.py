@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'pannes',
     'dashboardAdmin',
     'dashboardUser',
-    'facture'
+    'facture',
+    'notification',
    
 
 ]
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'notification.middleware.NotificationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -73,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'notification.context_processors.notifications',
             ],
             'libraries': {
                 'custom_filters': 'materiels.templatetags.custom_filters',
@@ -88,9 +91,9 @@ WSGI_APPLICATION = 'DjangoWPKproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Webpick',
+        'NAME': 'WebpickOrigin',
         'USER': 'postgres',
-        'PASSWORD': 'ilias',
+        'PASSWORD': 'admin',
         'HOST': 'localhost',
         'PORT':'5433',
     }

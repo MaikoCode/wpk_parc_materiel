@@ -13,8 +13,59 @@
 {% endif %}
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0">Les pannes en cours</h1>    
+    <h1 class="h3 mb-0">Les pannes en cours</h1>
+    <button type="button" class="btn btn-primary col-2" data-toggle="modal" data-target="#panneFormModal">Ajouter une panne</button>
 </div>
+
+
+<!-- Modal -->
+<div class="modal fade panne-modal" id="panneFormModal" tabindex="-1" aria-labelledby="panneFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="panneFormModalLabel">Nouvelle Panne</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form method="post" class="form">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="id_materiel" class="form-label">Matériel</label>
+              <select class="form-control" id="id_materiel" name="materiel">
+                {% for materiel in form.materiel.field.queryset %}
+                  <option value="{{ materiel.pk }}" {% if materiel.pk == form.materiel.value|default:'' %} selected {% endif %}>
+                    {{ materiel.nomMateriel }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if form.materiel.errors %}
+                <div class="alert alert-danger mt-2">
+                  {{ form.materiel.errors }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="id_description" class="form-label">Description</label>
+              <textarea class="form-control" id="id_description" name="description">{{ form.description.value|default:'' }}</textarea>
+              {% if form.description.errors %}
+                <div class="alert alert-danger mt-2">
+                  {{ form.description.errors }}
+                </div>
+              {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--End modal-->
+
 
 <div class="card shadow mb-4">
 
@@ -46,7 +97,7 @@
             Historique des pannes
         </a>
     </div>
-    
+
 </div>
 <!-- End Search Form -->
     <div class="card-body">
@@ -57,7 +108,7 @@
                       <tr>
                         <th>Nom du matériel</th>
                         <th>Date de la panne</th>
-                        <th>Status</th>
+                        <th>En panne</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -138,6 +189,47 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+
+
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        {% if pannes.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ pannes.previous_page_number }}">Précédent</a></li>
+                        {% endif %}
+
+                        {% if pannes.number|add:"-3" > 1 %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+
+                        {% for i in pannes.paginator.page_range %}
+                            {% if i == pannes.number %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ i }}</span>
+                                </li>
+                            {% elif i > pannes.number|add:"-4" and i < pannes.number|add:4 %}
+                                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pannes.number|add:3 < pannes.paginator.num_pages %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+
+                        {% if pannes.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ pannes.next_page_number }}">Suivant</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+
+
+
+
+
+
+
+
             </table>
         </div>
     </div>
@@ -166,5 +258,17 @@
           modal.show();
       });
   });
+
+  window.onload = function() {
+    // Récupérer le formulaire
+    var form = document.querySelector(".form");
+    // S'il y a des erreurs dans le formulaire, ouvrir la modale
+    if (form.querySelectorAll(".alert-danger").length > 0) {
+      var myModal = new bootstrap.Modal(document.getElementById('panneFormModal'), {})
+      myModal.show();
+    }
+  }
+</script>
+
 </script>
 {% endblock %}
