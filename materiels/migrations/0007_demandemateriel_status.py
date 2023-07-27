@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='demandemateriel',
             name='status',
-            field=models.CharField(default='pas encore traite'),
+            field=models.CharField(default='pas encore traite',max_length=100),
         ),
     ]

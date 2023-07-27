@@ -122,12 +122,12 @@ def get_filtered_mouvement(search_query):
         return MouvementMateriel.objects.filter(
             Q(idMouvement__icontains=search_query) |
             Q(description__icontains=search_query) |                           
-            Q(employe_nom_icontains=search_query) |
-            Q(employe_prenom_icontains=search_query) |                  
-            Q(materiel_nomMateriel_icontains=search_query) |                
-            Q(materiel_NumSerie_icontains=search_query) |                   
-            Q(materiel_sous_categorienomSousCategory_icontains=search_query) |   
-            Q(materiel_sous_categoriecategorienomCategory_icontains=search_query) | 
+            Q(employe__nom__icontains=search_query) |
+            Q(employe__prenom__icontains=search_query) |                  
+            Q(materiel__nomMateriel__icontains=search_query) |                
+            Q(materiel__NumSerie__icontains=search_query) |                   
+            Q(materiel__sous_categorie__nomSousCategory__icontains=search_query) |   
+            Q(materiel__sous_categorie__categorie__nomCategory__icontains=search_query) | 
             Q(actionType__icontains=search_query) |
             Q(dateMouvement__icontains=search_query)                         
         ).order_by('idMouvement')

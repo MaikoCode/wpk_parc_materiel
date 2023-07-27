@@ -91,16 +91,10 @@ WSGI_APPLICATION = 'DjangoWPKproject.wsgi.application'
 
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Webpick',
-        'USER': 'postgres',
-        'PASSWORD': 'ilias',
-        'HOST': 'localhost',
-        'PORT':'5433',
-    }
-}
+try:
+    from .local_settings import *
+except ImportError:
+    pass
 
 
 # Password validation
