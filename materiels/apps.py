@@ -6,3 +6,4 @@ class MaterielsConfig(AppConfig):
     name = 'materiels'
     def ready(self):
         import materiels.templatetags.custom_filters
+        import materiels.signals
