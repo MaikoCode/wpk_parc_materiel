@@ -5,12 +5,15 @@ from django.contrib import messages
 
 from fournisseur.models import Fournisseur
 
+from django.core.paginator import Paginator
+
+from materiels.models import Materiel
+
 # Create your views here.
 
 def home(request):
     if request.method == "POST":
         # extract fields from the POST request
-        fournisseur_id = request.POST.get("fournisseur")
         date_facture = request.POST.get("date_facture")
         numero_facture = request.POST.get("numero_facture")
         ville = request.POST.get("ville")
@@ -24,28 +27,25 @@ def home(request):
 
         # create and save Facture instance
         facture = Facture.objects.create(
-            fournisseur=Fournisseur.objects.get(idFournisseur=fournisseur_id),
             date_facture=date_facture,
             numero_facture=numero_facture,
             ville=ville,
             montant_total=montant_total,
             facture_pdf=request.FILES['facture_pdf'] if 'facture_pdf' in request.FILES else None
-
         )
         # facture.save()
-        print('facture founis: ',facture.fournisseur.idFournisseur)
         print('facture num: ', facture.numero_facture)
         print('facture ville: ', facture.ville)
         print('montant total: ',montant_total)
 
         # extract article ids and quantities
-        article_names = request.POST.getlist("articles")
+        article_ids = request.POST.getlist("articles")
         quantities = request.POST.getlist("qty")
         prix_unitaires = request.POST.getlist("rate")
-        article_names.pop(0)
+        article_ids.pop(0)
         quantities.pop(0)
         prix_unitaires.pop(0)
-        print('articles: ', article_names)
+        print('articles: ', article_ids)
         print('quantities: ', quantities)
         print('les prix unitaire: ', prix_unitaires)
 
@@ -63,10 +63,10 @@ def home(request):
         # # redirect to some page, e.g., the detail view of the created Facture
         # return redirect('facture')
         # Create and save the LigneFacture instances (articles) related to the Facture
-        for article_name, quantity, prix_unitaire in zip(article_names, quantities, prix_unitaires):
+        for article_id, quantity, prix_unitaire in zip(article_ids, quantities, prix_unitaires):
             # Get or create the article
-            article, created = Article.objects.get_or_create(
-                nom_article=article_name,
+            article, created = Article.objects.get_or_create(   
+                materiel=Materiel.objects.get(idMateriel=article_id),
                 defaults={"prix_unitaire": prix_unitaire}
             )
             sous_total = int(quantity) * float(prix_unitaire)
@@ -81,8 +81,17 @@ def home(request):
     else:
         # handle GET request, e.g., by rendering a form
         fournisseurs = Fournisseur.objects.all()
-        return render(request, 'facture.html', {'fournisseurs': fournisseurs})
+        materiels = Materiel.objects.all()
+        return render(request, 'facture.html', {'fournisseurs': fournisseurs, 'materiels':materiels})
     
+# def displayfacture(request):
+#     factures = Facture.objects.all()
+#     return render(request, 'facture_list.html', {'factures': factures})
 def displayfacture(request):
-    factures = Facture.objects.all()
-    return render(request, 'facture_list.html', {'factures': factures})
+    factures_list = Facture.objects.all()
+    paginator = Paginator(factures_list, 3) # Show 10 factures per page.
+    page_number = request.GET.get('page')
+    factures = paginator.get_page(page_number)
+    titles = ["Date","Numero","Ville","Montant Total","Details", "Facture PDF"]
+    titles2=["Fournisseur","Matériel","Prix","Quantité","Sous-Total"]
+    return render(request, 'facture_list.html', {'factures': factures, 'titles': titles, 'titles2': titles2})

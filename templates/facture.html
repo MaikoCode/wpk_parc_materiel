@@ -30,17 +30,7 @@
         <div class="card-body">
 
             <div class="row">
-                <div class="col-8">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" >Fourniss.</span>
-                        <!-- <input type="text" class="form-control" placeholder="Fournisseur" name="fournisseur" required> -->
-                        <select class="form-control" name="fournisseur" required>
-                            {% for fournisseur in fournisseurs %}
-                                <option value="{{ fournisseur.idFournisseur }}">{{ fournisseur.nomFournisseur }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-        
+                <div class="col-8">        
                     <div class="input-group mb-3">
                         <span class="input-group-text" >Ville</span>
                         <input type="text" class="form-control" placeholder="Ville" name="ville" required>
@@ -84,7 +74,16 @@
                 <tbody id="TBody">
                   <tr id="TRow" class="d-none">
                     <th scope="row">1</th>
-                    <td><input type="text" class="form-control" name="articles"></td>
+                    <td>
+                      <!-- <input type="text" class="form-control" name="articles"> -->
+                      
+                      <select class="form-control" name="articles" required>
+                        {% for materiel in materiels %}
+                            <option value="{{ materiel.idMateriel }}">{{ materiel.nomMateriel }} | {{materiel.NumSerie }} </option>
+                        {% endfor %}
+                      </select>
+                    
+                    </td>
                     <td><input type="number" class="form-control text-end" name="qty" onchange="Calc(this);"></td>
                     <td><input type="number" class="form-control text-end" name="rate"  onchange="Calc(this);"></td>
                     <td><input type="number" class="form-control text-end" name="amt" value="0" disabled=""></td>

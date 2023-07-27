@@ -7,10 +7,10 @@ class MouvementForm(forms.ModelForm):
         model = MouvementMateriel
         fields = ['dateMouvement', 'dateRetour', 'description', 'employe', 'materiel']
 
-    def _init_(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         is_edit = kwargs.pop('is_edit', False)  # Retrieve the is_edit flag or default to False
         include_materiel = kwargs.pop('include_materiel', None)
-        super()._init_(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # If the form is bound to an instance, ensure the instance's 'materiel' is included in the queryset
         if include_materiel is not None:
@@ -30,6 +30,8 @@ class AffectationForm(forms.ModelForm):
         model = MouvementMateriel
         fields = ['dateMouvement', 'description', 'employe']
 
-    def _init_(self, *args, **kwargs):
-        super()._init_(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.fields['employe'].queryset = Employe.objects.all()
+        # self.fields['dateMouvement'].widget.attrs['class'] = 'form-control'  # Add form-control class for styling
+        # self.fields['employe'].widget.attrs['class'] = 'form-control'  # Add form-control class for styling
