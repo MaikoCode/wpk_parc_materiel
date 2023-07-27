@@ -54,15 +54,10 @@
       <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
         <thead>
           <tr>
-            <th>ID demande</th>
-            <th>Date de début d'utilisation</th>
-            <th>Description de la demande</th>
-            <th>nom materiel</th>
-            <th>N° Série matériel</th>
-            <th>Description</th>
-            <th>disponibilité</th>
-            <th>Statut</th>
-            <th>Actions</th>
+            {% for title in titles %}
+            <th>{{title}}</th>
+            {% endfor %}
+
           </tr>
         </thead>
         <tbody>

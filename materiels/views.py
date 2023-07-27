@@ -158,13 +158,24 @@ def demander_materiel(request):
     messages.success(request, 'La demande a echouée.')
     return redirect('materiels_user')
 
-class Gesion_Demande(ListView):
+class Gestion_Demande(ListView):
     model = DemandeMateriel
     template_name = 'gestion_demande.html'
     context_object_name = 'demandes'
 
-    def get_queryset(self):
-        return DemandeMateriel.objects.all()
+    def get(self, request):
+        demandes=DemandeMateriel.objects.all()
+        l=["ID demande",
+            "Date de début d'utilisation",
+            "Description de la demande",
+            "nom materiel",
+            "N° Série matériel",
+            "Description",
+            "disponibilité",
+            "Statut",
+            "Actions"]
+        context = {'titles':l, 'demandes':demandes}
+        return render(request, 'gestion_demande.html', context)
 
     def post(self, request, *args, **kwargs):
         demande_id = request.POST.get('demande_id')
@@ -182,7 +193,7 @@ class Gesion_Demande(ListView):
             demande.status = 'Rejetee'
             demande.save()
             messages.warning(request, f'Demande {demande.id} rejetée.')
-
+           
         return render(request, self.template_name, {'demandes': self.get_queryset()})
 
 

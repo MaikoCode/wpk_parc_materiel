@@ -6,7 +6,7 @@ import employe.views
 import fournisseur.views
 from materiels.views import MaterielListView
 from materiels.views import MaterielListView_User
-from materiels.views import  Gesion_Demande
+from materiels.views import  Gestion_Demande
 import materiels.views 
 import mouvementmateriels.views
 import dashboardAdmin.views
@@ -48,7 +48,7 @@ urlpatterns = [
     path('mouvement/<int:idMouvement>/affect',mouvementmateriels.views.affecter_mouvement,name='affecter_mouvement'),
     
 
-    path('Gesion_Demande',Gesion_Demande.as_view(),name='Gesion_Demande'),
+    path('Gestion_Demande',Gestion_Demande.as_view(),name='Gestion_Demande'),
 
 
     path('pannes/', pannes.views.pannes_page, name="pannes"),
