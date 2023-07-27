@@ -108,6 +108,7 @@ class MaterielListView_User(View):
         sub_categories = SousCategorie.objects.all()
         fournisseurs = Fournisseur.objects.all()
         materiels = Materiel.objects.all()
+        demandes = DemandeMateriel.objects.all()
         
         # Convertir les données en JSON
         categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
@@ -120,6 +121,8 @@ class MaterielListView_User(View):
             'categories_json': json.dumps(categories_json),
             'sub_categories_json': json.dumps(sub_categories_json),
             'fournisseurs': fournisseurs,
+            'demandes': demandes,  
+
         }
         return render(request, 'materiels_user.html', context)
 
@@ -186,14 +189,24 @@ class Gesion_Demande(ListView):
 
 def accepter_demande(request, demande_id):
     demande = get_object_or_404(DemandeMateriel, id=demande_id)
-
+    # Mettre à jour le statut de la demande en "Acceptée"
     demande.status = "Acceptée"
     demande.save()
-    return redirect('home')  
+
+    # Afficher un message de succès
+    messages.success(request, "La demande a été acceptée avec succès.")
+
+    # Rediriger l'utilisateur vers la même page
+    return redirect(request.META['HTTP_REFERER'])  
 
 def rejeter_demande(request, demande_id):
     demande = get_object_or_404(DemandeMateriel, id=demande_id)
 
     demande.status = "Rejetée"
     demande.save()
-    return redirect('home') 
+
+    # Afficher un message de succès
+    messages.success(request, "La demande a été rejetée.")
+
+    # Rediriger l'utilisateur vers la même page
+    return redirect(request.META['HTTP_REFERER'])  

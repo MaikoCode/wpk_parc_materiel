@@ -9,3 +9,10 @@ def exist_demande(demandeur_id, materiel_id):
     return demande_existe
 
 
+@register.filter
+def demande_statut(demandeur_id, materiel_id):
+    try:
+        demande = DemandeMateriel.objects.get(demandeur_id=demandeur_id, materiel_id=materiel_id)
+        return demande.status
+    except DemandeMateriel.DoesNotExist:
+        return None
