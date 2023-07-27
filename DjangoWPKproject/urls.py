@@ -6,12 +6,15 @@ import employe.views
 import fournisseur.views
 from materiels.views import MaterielListView
 from materiels.views import MaterielListView_User
+from materiels.views import  Gestion_Demande
 import materiels.views 
 import mouvementmateriels.views
 import dashboardAdmin.views
 import dashboardUser.views
 import pannes.views 
 import facture.views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -44,13 +47,26 @@ urlpatterns = [
     path('mouvement/<int:idMouvement>/edit/',mouvementmateriels.views.edit_mouvement, name='edit_mouvement'),
     path('mouvement/<int:idMouvement>/affect',mouvementmateriels.views.affecter_mouvement,name='affecter_mouvement'),
     
+
+    path('Gestion_Demande',Gestion_Demande.as_view(),name='Gestion_Demande'),
+
+
     path('pannes/', pannes.views.pannes_page, name="pannes"),
     path('pannes/toggle/<int:panne_id>/', pannes.views.toggle_panne, name='toggle_panne'),
     path('pannes/csv/', pannes.views.download_pannes_csv, name='pannes_csv'),
 
 
     path('demander_materiel/', materiels.views.demander_materiel, name='demander_materiel'),
+    path('accepter_demande/<int:demande_id>/', materiels.views.accepter_demande, name='accepter_demande'),
+    path('rejeter_demande/<int:demande_id>/', materiels.views.rejeter_demande, name='rejeter_demande'),
+
+
+
     #facture
     path('facture/', facture.views.home, name='facture'),
+    path('displayfacture/', facture.views.displayfacture, name='displayfacture'),
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

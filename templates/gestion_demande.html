@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+{% if message.tags %}
+{% if message.tags == 'error' %}
+<div class="alert alert-danger alert-dismissible">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  <strong>{{ message.tags|capfirst }}!</strong> {{ message }}.
+</div>
+{% else %}
+<div class="alert alert-{{ message.tags }} alert-dismissible">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  <strong>{{ message.tags|capfirst }}!</strong> {{ message }}.
+</div>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0">Liste des demandes </h1>
+</div>
+
+
+
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+  </div>
+  <div class="card-body">
+    <!-- Search Form -->
+    <form method="get" action="{% url 'mouvements' %}">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <input type="text" class="form-control" name="search_query" placeholder="Rechercher un mouvement...">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="submit">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <!-- End Search Form -->
+    <div class="table-responsive">
+      <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+          <tr>
+            {% for title in titles %}
+            <th>{{title}}</th>
+            {% endfor %}
+
+          </tr>
+        </thead>
+        <tbody>
+          {% for demande in demandes %}
+          <tr>
+            <td>{{ demande.id }}</td>
+            <td>{{ demande.date_debut }}</td>
+            <td>{{ demande.description }}</td>
+            <td>{{ demande.materiel.nomMateriel }}</td>
+            <td>{{ demande.materiel.NumSerie }}</td>
+
+            <td>{{ demande.materiel.description }}</td>
+            <td>
+              {% if demande.materiel.is_taken %}
+              materiel occupé
+              {% else %}
+              disponible
+              {% endif %}
+            </td>
+            <td>{{ demande.status }}</td>
+            <td>
+              {% if demande.status == "pas encore traite" %}
+              <!-- Valider -->
+              <a href="{% url 'accepter_demande' demande.id %}">
+                <i class="fas fa-check" style="color: green;"></i>
+              </a>
+
+              <!-- Pour le bouton "Rejeter" -->
+              <a href="{% url 'rejeter_demande' demande.id %}">
+                <i class="fas fa-times" style="color: red;"></i>
+              </a>
+              {% endif %}
+              {% if demande.status == "Acceptée" %}
+              <!-- Pour le bouton "Rejeter" -->
+              <a href="{% url 'rejeter_demande' demande.id %}">
+                <i class="fas fa-times" style="color: red;"></i>
+              </a>
+              {% endif %}
+              {% if demande.status == "Rejetée" %}
+              <!-- Pour le bouton "Rejeter" -->
+              <a href="{% url 'accepter_demande' demande.id %}">
+                <i class="fas fa-check" style="color: green;"></i>
+              </a>
+              {% endif %}
+
+
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- pagination -->
+      <div class="container">
+        <div class="row my-5">
+          <div class="col-md-4">
+            <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
+            <nav aria-label="...">
+              <ul class="pagination">
+                <li class="page-item">
+                  {% if page.has_previous %}
+                  <a class="page-link" href="{% url 'mouvements' %}?page={{ page.previous_page_number }}">Previous</a>
+                  {% endif %}
+                </li>
+
+                {% for num_page in page.paginator.page_range %}
+                {% if page.number == num_page %}
+                <li class="page-item active" aria-current="page">
+                  <a class="page-link" href="{% url 'mouvements' %}?page={{ num_page }}">{{ num_page }}</a>
+                </li>
+                {% else %}
+                <li class="page-item" aria-current="page">
+                  <a class="page-link" href="{% url 'mouvements' %}?page={{ num_page }}">{{ num_page }}</a>
+                </li>
+                {% endif %}
+
+                {% endfor %}
+
+                <li class="page-item">
+                  {% if page.has_next %}
+                  <a class="page-link" href="{% url 'mouvements' %}?page={{ page.next_page_number }}">Next</a>
+                  {% endif %}
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <!-- end pagination -->
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

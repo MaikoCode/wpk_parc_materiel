@@ -28,7 +28,7 @@ class DemandeMateriel(models.Model):
     materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)
     date_debut = models.DateField()
     description = models.TextField()
-    status = models.CharField(default="pas encore traite")
+    status = models.CharField(max_length=100 , default="pas encore traite")
 
 
 

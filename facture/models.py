@@ -11,6 +11,8 @@ class Facture(models.Model):
     numero_facture = models.CharField(max_length=50, unique=True)
     montant_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     ville = models.CharField(max_length=30)
+    #facture_pdf = models.FileField(upload_to='factures/', validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
+    facture_pdf = models.FileField(upload_to='factures/', null=True, blank=True)
     
 
 class Article(models.Model):

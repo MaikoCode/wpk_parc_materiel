@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'notification.context_processors.notifications',
+                'django.template.context_processors.media',
             ],
             'libraries': {
                 'custom_filters': 'materiels.templatetags.custom_filters',
@@ -88,44 +89,18 @@ WSGI_APPLICATION = 'DjangoWPKproject.wsgi.application'
 
 
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'WebpickOrigin',
+        'NAME': 'Webpick',
         'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'ilias',
         'HOST': 'localhost',
         'PORT':'5433',
     }
 }
-
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'projet_django_wpk',
-#         'USER': 'root',
-#         'PASSWORD': '',
-#         'HOST': 'localhost',
-#         'PORT': '3306 ',
-#     }
-# }
-
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'Webpick',
-#         'USER': 'postgres',
-#         'PASSWORD': 'ilias',
-#         'HOST': 'localhost',
-#         'PORT':'5433',
-#     }
-# }
 
 
 # Password validation
@@ -175,3 +150,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

@@ -65,10 +65,10 @@
                                 </div>
                                 <div>
                                     {% if not materiel.is_taken %}
-                                    
+
                                     {% if not request.user.id|exist_demande:materiel.idMateriel %}
 
-                                    
+
                                     <!-- Bouton pour demander le matériel -->
                                     <button type="button" class="btn btn-link add-button" data-toggle="modal"
                                         data-target="#addModal-{{ materiel.idMateriel }}">
@@ -77,6 +77,13 @@
                                     </button>
                                     {% else %}
                                     <span>Vous avez déjà soumis une demande pour ce matériel.</span>
+
+                                    {% with demande_status=request.user.id|demande_statut:materiel.idMateriel %}
+                                    {% if demande_status and demande_status != "pas encore traite" %}
+                                    <br>
+                                    Statut de la demande : {{ demande_status }}
+                                    {% endif %}
+                                    {% endwith %}
                                     {% endif %}
                                     {% else %}
                                     <span>Ce matériel est actuellement indisponible.</span>

@@ -10,6 +10,8 @@ from django.http import JsonResponse
 from fournisseur.models import Fournisseur
 import json
 from .forms import DemandeMaterielForm
+from django.views.generic import ListView
+
 
 
 class MaterielListView(View):
@@ -106,6 +108,7 @@ class MaterielListView_User(View):
         sub_categories = SousCategorie.objects.all()
         fournisseurs = Fournisseur.objects.all()
         materiels = Materiel.objects.all()
+        demandes = DemandeMateriel.objects.all()
         
         # Convertir les données en JSON
         categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
@@ -118,6 +121,8 @@ class MaterielListView_User(View):
             'categories_json': json.dumps(categories_json),
             'sub_categories_json': json.dumps(sub_categories_json),
             'fournisseurs': fournisseurs,
+            'demandes': demandes,  
+
         }
         return render(request, 'materiels_user.html', context)
 
@@ -152,3 +157,67 @@ def demander_materiel(request):
 
     messages.success(request, 'La demande a echouée.')
     return redirect('materiels_user')
+
+class Gestion_Demande(ListView):
+    model = DemandeMateriel
+    template_name = 'gestion_demande.html'
+    context_object_name = 'demandes'
+
+    def get(self, request):
+        demandes=DemandeMateriel.objects.all()
+        l=["ID demande",
+            "Date de début d'utilisation",
+            "Description de la demande",
+            "nom materiel",
+            "N° Série matériel",
+            "Description",
+            "disponibilité",
+            "Statut",
+            "Actions"]
+        context = {'titles':l, 'demandes':demandes}
+        return render(request, 'gestion_demande.html', context)
+
+    def post(self, request, *args, **kwargs):
+        demande_id = request.POST.get('demande_id')
+        action = request.POST.get('action')
+
+        demande = DemandeMateriel.objects.get(id=demande_id)
+
+        if action == 'valider':
+            # Mettre à jour le statut de la demande
+            demande.status = 'Validee'
+            demande.save()
+            messages.success(request, f'Demande {demande.id} validée avec succès.')
+        elif action == 'rejeter':
+            # Mettre à jour le statut de la demande
+            demande.status = 'Rejetee'
+            demande.save()
+            messages.warning(request, f'Demande {demande.id} rejetée.')
+           
+        return render(request, self.template_name, {'demandes': self.get_queryset()})
+
+
+
+def accepter_demande(request, demande_id):
+    demande = get_object_or_404(DemandeMateriel, id=demande_id)
+    # Mettre à jour le statut de la demande en "Acceptée"
+    demande.status = "Acceptée"
+    demande.save()
+
+    # Afficher un message de succès
+    messages.success(request, "La demande a été acceptée avec succès.")
+
+    # Rediriger l'utilisateur vers la même page
+    return redirect(request.META['HTTP_REFERER'])  
+
+def rejeter_demande(request, demande_id):
+    demande = get_object_or_404(DemandeMateriel, id=demande_id)
+
+    demande.status = "Rejetée"
+    demande.save()
+
+    # Afficher un message de succès
+    messages.success(request, "La demande a été rejetée.")
+
+    # Rediriger l'utilisateur vers la même page
+    return redirect(request.META['HTTP_REFERER'])  
