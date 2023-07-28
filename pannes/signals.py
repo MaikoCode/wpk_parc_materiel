@@ -6,4 +6,6 @@ from notification.models import create_notification
 @receiver(post_save, sender=Panne)
 def send_notification_after_save(sender, instance, created, **kwargs):
     if created:
-        create_notification(instance.user, f'Une nouvelle instance de {instance} a été créée')
+        create_notification(instance.user, f'{instance.user} vient de signaler une panne', theme='pannes')
+    elif instance.resolue:
+        create_notification(instance.user, f'{instance.materiel.nomMateriel} a été reparé', role_target='USER', theme='pannes')

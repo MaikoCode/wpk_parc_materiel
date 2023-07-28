@@ -88,9 +88,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'DjangoWPKproject.wsgi.application'
 
 
-
-
-
 try:
     from .local_settings import *
 except ImportError:

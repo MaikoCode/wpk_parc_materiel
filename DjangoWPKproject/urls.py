@@ -7,12 +7,13 @@ import fournisseur.views
 from materiels.views import MaterielListView
 from materiels.views import MaterielListView_User
 from materiels.views import  Gestion_Demande
-import materiels.views 
+import materiels.views
 import mouvementmateriels.views
 import dashboardAdmin.views
 import dashboardUser.views
 import pannes.views 
 import facture.views
+import notification.views
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -65,7 +66,7 @@ urlpatterns = [
     #facture
     path('facture/', facture.views.home, name='facture'),
     path('displayfacture/', facture.views.displayfacture, name='displayfacture'),
-
+    path('read_notification/<int:notification_id>/', notification.views.read_notification, name='read_notification'),
 ]
 
 if settings.DEBUG:
