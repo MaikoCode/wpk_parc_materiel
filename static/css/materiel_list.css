@@ -1,0 +1,28 @@
+.category-row {
+    background-color: #3e98d1;
+    color: white;
+    height: 40px; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    cursor: pointer;
+    margin-bottom: 0.5%;
+}
+.sub-category-row {
+    background-color: #f7f7f7;
+    margin-left: 2%;
+    margin-bottom: 1%;
+    width: 98%;
+    height: 30px; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+.material-row {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 1%;
+}

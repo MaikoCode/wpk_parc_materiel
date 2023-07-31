@@ -85,42 +85,28 @@
                 <i class="fas fa-check" style="color: green;"></i>
               </a>
 
-              <!-- Pour le bouton "Rejeter" -->
-              <a href="{% url 'rejeter_demande' demande.id %}">
-                <i class="fas fa-times" style="color: red;"></i>
-              </a>
-              {% endif %}
-              {% if demande.status == "Acceptée" %}
-              <!-- Pour le bouton "Rejeter" -->
-              <a href="{% url 'rejeter_demande' demande.id %}">
-                <i class="fas fa-times" style="color: red;"></i>
-              </a>
-              {% endif %}
-              {% if demande.status == "Rejetée" %}
-              <!-- Pour le bouton "Rejeter" -->
-              <a href="{% url 'accepter_demande' demande.id %}">
-                <i class="fas fa-check" style="color: green;"></i>
-              </a>
-              {% endif %}
-
-
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <!-- pagination -->
-      <div class="container">
-        <div class="row my-5">
-          <div class="col-md-4">
-            <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
-            <nav aria-label="...">
-              <ul class="pagination">
-                <li class="page-item">
-                  {% if page.has_previous %}
-                  <a class="page-link" href="{% url 'mouvements' %}?page={{ page.previous_page_number }}">Previous</a>
-                  {% endif %}
-                </li>
+                            <!-- Bouton pour rejeter la demande -->
+                                <a href="{% url 'rejeter_demande' demande.id %}" data-toggle="modal" data-target="#rejectModal-{{ demande.id }}">
+                                        <i class="fas fa-times" style="color: red;"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- pagination -->
+            <div class="container">
+              <div class="row my-5">
+                <div class="col-md-4">
+                  <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
+                  <nav aria-label="...">
+                    <ul class="pagination">
+                      <li class="page-item">
+                        {% if page.has_previous %}
+                        <a class="page-link" href="{% url 'mouvements' %}?page={{ page.previous_page_number }}">Previous</a>
+                        {% endif %}
+                      </li>
 
                 {% for num_page in page.paginator.page_range %}
                 {% if page.number == num_page %}
