@@ -56,6 +56,7 @@ urlpatterns = [
     path('pannes/', pannes.views.pannes_page, name="pannes"),
     path('pannes/toggle/<int:panne_id>/', pannes.views.toggle_panne, name='toggle_panne'),
     path('pannes/csv/', pannes.views.download_pannes_csv, name='pannes_csv'),
+    path('pannes_user/', pannes.views.pannes_page_user, name="pannes_user"),
 
 
     path('demander_materiel/', materiels.views.demander_materiel, name='demander_materiel'),

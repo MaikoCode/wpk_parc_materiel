@@ -57,8 +57,7 @@ def pannes_page(request):
             panne.materiel.save()  # Sauvegarder l'état du matériel
             panne.save()
     else:
-        form = PanneForm()
-
+        form = PanneForm()  
     return render(request, 'panne.html',
                   {'pannes': pannes, 'search_query': search_query, 'pannes_passees': pannes_passees, 'form': form})
 
@@ -70,3 +69,42 @@ def toggle_panne(request, panne_id):
     panne.materiel.save()  # Sauvegarder les modifications du matériel
     panne.save()  # Sauvegarder les modifications de la panne
     return redirect('pannes')
+
+
+def pannes_page_user(request):
+    materiels_en_panne = Materiel.objects.filter(en_panne=True)
+
+    pannes = Panne.objects.none()  # Créez un queryset vide
+    for materiel in materiels_en_panne:
+        pannes_materiel = Panne.objects.filter(materiel=materiel, resolue=False)
+        pannes = pannes.union(pannes_materiel)  # Combinez les queryset
+
+    search_query = request.GET.get('search_query')
+
+    if search_query:
+        pannes = pannes.filter(
+            Q(materiel__nomMateriel__icontains=search_query) |
+            Q(materiel__NumSerie__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(date_panne__icontains=search_query),
+            resolue=False
+        )
+
+    paginator = Paginator(pannes, 2)  # Montrer 10 pannes par page
+    page_number = request.GET.get('page')
+    pannes = paginator.get_page(page_number)
+
+    pannes_passees = Panne.objects.filter(resolue=True)
+
+    if request.method == 'POST':
+        form = PanneForm(request.POST)
+        if form.is_valid():
+            panne = form.save(commit=False)
+            panne.user = request.user
+            panne.materiel.en_panne = True  # Mettre le matériel en état de panne
+            panne.materiel.save()  # Sauvegarder l'état du matériel
+            panne.save()
+    else:
+        form = PanneForm()
+    return render(request, 'pannes_user.html',
+                  {'pannes': pannes, 'search_query': search_query, 'pannes_passees': pannes_passees, 'form': form})
