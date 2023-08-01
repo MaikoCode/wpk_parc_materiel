@@ -17,10 +17,6 @@ def mouvements(request):
         form = MouvementForm(request.POST)
         try:
             if form.is_valid():
-                # date_mouvement = form.cleaned_data['dateMouvement']
-                # date_retour = form.cleaned_data['dateRetour']
-                # description = form.cleaned_data['description']
-                # employe = form.cleaned_data['employe']
                 materiel = form.cleaned_data['materiel']
                 materiel.is_taken = True
                 materiel.save()
@@ -116,7 +112,7 @@ def affecter_mouvement(request, idMouvement):
             
     return redirect('mouvements')
 
-    
+
 def get_filtered_mouvement(search_query):
     if search_query:
         return MouvementMateriel.objects.filter(
@@ -132,4 +128,4 @@ def get_filtered_mouvement(search_query):
             Q(dateMouvement__icontains=search_query)                         
         ).order_by('idMouvement')
     else:
-        return MouvementMateriel.objects.all().order_by('idMouvement')
+        return MouvementMateriel.objects.all().order_by('-dateMouvement')

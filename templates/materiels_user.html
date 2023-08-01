@@ -1,13 +1,10 @@
 {% extends 'baseUser.html' %}
 {% load custom_filters %}
-
 {% load static %}
-
 {% block content %}
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Liste materiel Wpk</h1>
-
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -17,46 +14,36 @@
         {% endfor %}
     </div>
     {% endif %}
-
 </div>
-
-
 <div class="container">
-
     <div class="card">
         <div class="card-header">
             Catégories
         </div>
         <div class="card-body">
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field in form %}
+                {% for error in field.errors %}
+                <strong>{{ field.label }}:</strong> {{ error }}
+                {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
             {% for categorie in categories %}
-            <div class="category-row" data-toggle="collapse" data-target="#sous-categorie-{{ categorie.idCategory }}"
-                aria-expanded="false" style="background-color: #3e98d1; color: white; height: 40px; 
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 0 20px;
-                cursor: pointer;
-                margin-bottom: 0.5%;">
+            <div class="category-row" data-toggle="collapse" data-target="#sous-categorie-{{ categorie.idCategory }}"aria-expanded="false">
                 {{ categorie.nomCategory }} <span class="collapse-indicator">&#x25BC;</span>
             </div>
             <div id="sous-categorie-{{ categorie.idCategory }}" class="collapse">
                 {% for sous_categorie in categorie.souscategorie_set.all %}
                 <div class="sub-category-row" data-toggle="collapse"
-                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false" style="background-color: #f7f7f7; margin-left: 2%;margin-bottom: 1%; width: 98%;     height: 30px; 
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 10px 20px;
-                    cursor: pointer;">
+                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false" >
                     {{ sous_categorie.nomSousCategory }} <span class="collapse-indicator">&#x25BC;</span>
                 </div>
                 <div id="materiel-{{ sous_categorie.idSousCategorie }}" class="collapse">
                     <div class="list-group" style="background-color: #f7f7f7; margin-left: 4%; width: 96%;">
-
                         {% for materiel in sous_categorie.materiel_set.all %}
-                        <div class="material-row" style=" padding: 10px 20px;
-                              border-bottom: 1px solid #ccc;
-                              margin-bottom: 1%;">
+                        <div class="material-row" >
                             <div class="d-flex flex-wrap align-items-center">
                                 <div class="flex-grow-1">
                                     <strong>Nom:</strong> {{ materiel.nomMateriel }}<br>
@@ -92,10 +79,6 @@
                             </div>
                         </div>
                         {% endfor %}
-
-
-
-
                     </div>
                 </div>
                 {% endfor %}
@@ -103,15 +86,56 @@
             {% endfor %}
         </div>
     </div>
+    <br><br>
+    <div class="card">
+        <div class="card-header">
+            Mes Demandes
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="thead-w">
+                        <tr>
+                            <th>ID demande</th>
+                            <th>Date de début d'utilisation</th>
+                            <th>Description de la demande</th>
+                            <th>Nom matériel</th>
+                            <th>N° Série matériel</th>
+                            <th>Description</th>
+                            <th>Disponibilité</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demande in demandes %}
+                        <tr>
+                            <td>{{ demande.id }}</td>
+                            <td>{{ demande.date_debut }}</td>
+                            <td>{{ demande.description }}</td>
+                            <td>{{ demande.materiel.nomMateriel }}</td>
+                            <td>{{ demande.materiel.NumSerie }}</td>
+                            <td>{{ demande.materiel.description }}</td>
+                            <td>
+                                {% if demande.materiel.is_taken %}
+                                <span class="badge badge-danger">Matériel occupé</span>
+                                {% else %}
+                                <span class="badge badge-success">Disponible</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ demande.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-
 <!-- Modals -->
 {% for categorie in categories %}
 {% for sous_categorie in categorie.souscategorie_set.all %}
 {% for materiel in sous_categorie.materiel_set.all %}
 
-
-<!-- add demande Modal -->
 <!-- add demande Modal -->
 <div class="modal fade" id="addModal-{{ materiel.idMateriel }}" tabindex="-1" role="dialog"
     aria-labelledby="addModalLabel-{{ materiel.idMateriel }}" aria-hidden="true">
@@ -129,14 +153,14 @@
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="date_debut">Date de début d'utilisation :</label>
-                        <input type="date" class="form-control" id="date_debut" name="date_debut" required>
+                        <input type="date" class="form-control" id="date_debut" name="date_debut">
                     </div>
                     <div class="form-group">
                         <label for="description">Description de la demande :</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                     </div>
                     <input type="hidden" id="materiel " name="materiel" value="{{ materiel.idMateriel }}">
-                    <input type="hidden" id="demandeur" name="demandeur" value="{{ request.user.id }}">
+                    <input type="hidden" id="demandeur" name="demandeur" value="{{ request.user.employe.idEmploye }}">
                     <button type="submit" class="btn btn-primary">Envoyer la demande</button>
                 </form>
             </div>
@@ -144,18 +168,12 @@
     </div>
 </div>
 </div>
-
-
-
 {% endfor %}
 {% endfor %}
 {% endfor %}
-
-
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 <script>
     // Gérer le basculement de la flèche de catégorie lors du clic
     $('.category-row').click(function (event) {
@@ -164,18 +182,15 @@
         var target = $(this).data('target');
         $(target).toggleClass('show');
     });
-
     $('.sub-category-row').click(function (event) {
         event.stopPropagation();
         $(this).find('.collapse-indicator').toggleClass('collapsed');
         var target = $(this).data('target');
         $(target).toggleClass('show');
     });
-
     function handleCategoryChange(select) {
         var newCategoryInput = document.getElementById("new_category_input");
         var newCategoryOption = document.querySelector("#categorie option[value='new']");
-
         if (select.value === "new") {
             newCategoryInput.style.display = "block";
         } else {
@@ -183,7 +198,6 @@
             document.getElementById("new_category_name").value = "";
             document.getElementById("new_category_description").value = "";
         }
-
         // Activer/désactiver les options de sous-catégorie en fonction de la catégorie sélectionnée
         var selectedCategoryId = select.value;
         var subCategoryOptions = document.querySelectorAll('.sub-category-option');
@@ -192,11 +206,9 @@
             option.disabled = optionCategory !== selectedCategoryId && optionCategory !== "";
         }
     }
-
     function handleSubCategoryChange(select) {
         var newSubCategoryInput = document.getElementById("new_sub_category_input");
         var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
-
         if (select.value === "new") {
             newSubCategoryInput.style.display = "block";
         } else {
@@ -205,7 +217,5 @@
             document.getElementById("new_sub_category_description").value = "";
         }
     }
-
 </script>
-
 {% endblock %}

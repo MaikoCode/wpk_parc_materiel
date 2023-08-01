@@ -1,7 +1,7 @@
 from django import forms
 from .models import Materiel, Categorie, SousCategorie
 from .models import DemandeMateriel
-
+from employe.models import Employe
 
 class MaterielForm(forms.ModelForm):
     materiel_name = forms.CharField(label='Nom du matériel', max_length=100)
@@ -29,12 +29,13 @@ class MaterielUpdateForm(forms.ModelForm):
         model = Materiel
         fields = ['materiel_name', 'num_serie', 'materiel_description']
 
-
 class DemandeMaterielForm(forms.ModelForm):
     class Meta:
         model = DemandeMateriel
         fields = ['date_debut', 'description', 'materiel', 'demandeur']
         widgets = {
-            'demandeur': forms.HiddenInput(),
             'materiel': forms.HiddenInput(),
+            'demandeur': forms.HiddenInput(),
         }
+    date_debut = forms.DateField(widget=forms.DateInput(format='%Y-%m-%d'), label='Date de début d\'utilisation')
+    description = forms.CharField(widget=forms.Textarea, label='Description de la demande', max_length=500)

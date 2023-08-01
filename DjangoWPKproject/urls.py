@@ -52,6 +52,7 @@ urlpatterns = [
     path('Gestion_Demande',Gestion_Demande.as_view(),name='Gestion_Demande'),
 
 
+
     path('pannes/', pannes.views.pannes_page, name="pannes"),
     path('pannes/toggle/<int:panne_id>/', pannes.views.toggle_panne, name='toggle_panne'),
     path('pannes/csv/', pannes.views.download_pannes_csv, name='pannes_csv'),

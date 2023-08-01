@@ -33,7 +33,7 @@ class DemandeMateriel(models.Model):
 
 
     def __str__(self):
-        return f"{self.employe} - {self.materiel} - {self.date_debut_utilisation}"
+        return f"{self.demandeur} - {self.materiel} - {self.date_debut}"
 
     def get_demande_status_for_demandeur(self, demandeur_id):
         try:
