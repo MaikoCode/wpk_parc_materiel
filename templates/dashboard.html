@@ -147,7 +147,7 @@
 
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/chart.js' %}"></script>
 <script>
     let dataFromServer  = {{ montants_par_mois|safe }};
     let sousCategoryNames = {{ sous_category_names|safe }};
