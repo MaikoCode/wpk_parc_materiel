@@ -38,7 +38,7 @@ def dashboardView(request):
     sous_category_names = [sous_category.nomSousCategory for sous_category in sous_categories]
     materiel_counts = [sous_category.materiel_count for sous_category in sous_categories]
 
-
+    percentage_en_panne = round(percentage_en_panne, 2)
     context = {
         'total_materiels': total_materiels,
         'available_materiels': available_materiels,

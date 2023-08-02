@@ -9,7 +9,10 @@ def read_notification(request, notification_id):
     if notification.theme == 'pannes':
         return redirect('pannes')
 
-    # On va ajouter le reste des themes en fonction des pages
+    if notification.theme == 'demander_materiel' and request.user.role == 'ADMIN':
+        return redirect('Gestion_Demande')
 
+    if notification.theme == 'demander_materiel' and request.user.role == 'USER':
+        return redirect('materiels_user')
 
     return redirect('home')
