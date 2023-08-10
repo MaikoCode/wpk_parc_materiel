@@ -42,7 +42,7 @@ def pannes_page(request):
             resolue=False
         )
 
-    paginator = Paginator(pannes, 2)  # Montrer 10 pannes par page
+    paginator = Paginator(pannes, 2)
     page_number = request.GET.get('page')
     pannes = paginator.get_page(page_number)
 

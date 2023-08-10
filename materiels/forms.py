@@ -1,5 +1,5 @@
 from django import forms
-from .models import Materiel, Categorie, SousCategorie
+from .models import Materiel, Categorie, SousCategorie, Fournisseur
 from .models import DemandeMateriel
 from employe.models import Employe
 
@@ -39,3 +39,10 @@ class DemandeMaterielForm(forms.ModelForm):
         }
     date_debut = forms.DateField(widget=forms.DateInput(format='%Y-%m-%d'), label='Date de début d\'utilisation')
     description = forms.CharField(widget=forms.Textarea, label='Description de la demande', max_length=500)
+
+class MaterielFilterForm(forms.Form):
+    nomMateriel = forms.CharField(required=False)
+    fournisseur = forms.ModelChoiceField(queryset=Fournisseur.objects.all(), required=False)
+    sousCategorie = forms.ModelChoiceField(queryset=SousCategorie.objects.all(), required=False)
+    isTaken = forms.BooleanField(required=False)
+    enPanne = forms.BooleanField(required=False)
