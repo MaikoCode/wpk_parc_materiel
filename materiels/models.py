@@ -12,6 +12,8 @@ class SousCategorie(models.Model):
     description = models.CharField(max_length=200)
     categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.nomSousCategory
 class Materiel(models.Model):
     idMateriel = models.AutoField(primary_key=True)
     nomMateriel = models.CharField(max_length=100)
@@ -29,9 +31,6 @@ class DemandeMateriel(models.Model):
     date_debut = models.DateField()
     description = models.TextField()
     status = models.CharField(max_length=100 , default="pas encore traite")
-
-
-
     def __str__(self):
         return f"{self.demandeur} - {self.materiel} - {self.date_debut}"
 

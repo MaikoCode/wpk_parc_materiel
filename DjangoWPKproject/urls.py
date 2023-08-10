@@ -63,7 +63,8 @@ urlpatterns = [
     path('accepter_demande/<int:demande_id>/', materiels.views.accepter_demande, name='accepter_demande'),
     path('rejeter_demande/<int:demande_id>/', materiels.views.rejeter_demande, name='rejeter_demande'),
 
-
+    path('get_materials_for_subcategory/<int:subcategory_id>/<int:page>/', materiels.views.get_materials_for_subcategory, name='get_materials_for_subcategory'),
+    path('search_materials/', materiels.views.search_materials, name='search_materials'),
 
     #facture
     path('facture/', facture.views.home, name='facture'),

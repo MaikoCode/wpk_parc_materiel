@@ -11,24 +11,69 @@ from fournisseur.models import Fournisseur
 import json
 from .forms import DemandeMaterielForm
 from django.views.generic import ListView
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+
+def search_materials(request):
+    query = request.GET.get('query', '').strip()
+
+    materials = Materiel.objects.filter(
+        Q(nomMateriel__icontains=query) |
+        Q(NumSerie__icontains=query) |
+        Q(description__icontains=query)
+    ).values()
+
+    materials_list = list(materials)
+
+    has_results = len(materials_list) > 0
+
+    return JsonResponse({'data': materials_list, 'has_results': has_results})
+
+
+def get_materials_for_subcategory(request, subcategory_id, page=1):
+    try:
+        subcategory = SousCategorie.objects.get(idSousCategorie=subcategory_id)
+        materials = list(subcategory.materiel_set.values()) # Convert queryset to list of dictionaries
+
+        # Utilisez Paginator pour paginer les résultats
+        paginator = Paginator(materials, 5)  # Affichez 5 matériaux par page
+        current_page_materials = paginator.get_page(page)
+
+        return JsonResponse({'data': list(current_page_materials), 'has_next': current_page_materials.has_next()})
+    except SousCategorie.DoesNotExist:
+        return JsonResponse({'error': 'SousCategorie not found'}, status=404)
 
 class MaterielListView(View):
     def get(self, request):
-        categories = Categorie.objects.all()
+        category_id = request.GET.get('category_id')
+        categories_filter = Categorie.objects.all()
+
+        if category_id:
+            categories = Categorie.objects.filter(idCategory=category_id)
+        else:
+            categories = categories_filter
+
         sub_categories = SousCategorie.objects.all()
         fournisseurs = Fournisseur.objects.all()
-        # Convertir les données en JSON
+
         categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
-        sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory, 'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
+        sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory,
+                                'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
+
         form = MaterielForm()
+
         context = {
+            'categories_filter': categories_filter,
             'categories': categories,
             'sub_categories': sub_categories,
             'form': form,
             'categories_json': json.dumps(categories_json),
             'sub_categories_json': json.dumps(sub_categories_json),
             'fournisseurs': fournisseurs,
+            'selected_category_id': category_id  # Ajout de l'ID de la catégorie sélectionnée au contexte
         }
+
         return render(request, 'materiels.html', context)
 
     def post(self, request):
@@ -195,4 +240,4 @@ def rejeter_demande(request, demande_id):
     # Afficher un message de succès
     messages.success(request, "La demande a été rejetée.")
     # Rediriger l'utilisateur vers la même page
-    return redirect(request.META['HTTP_REFERER'])  
+    return redirect(request.META['HTTP_REFERER'])

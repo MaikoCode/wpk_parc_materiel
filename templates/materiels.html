@@ -6,6 +6,8 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Liste materiel Wpk</h1>
 
+    <!-- Formulaire de filtrage -->
+
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -95,7 +97,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="materiel_name">Nom du matériel</label>
+                            <label for="materiel_name">Nom du materiel</label>
                             <input type="text" id="materiel_name" name="materiel_name" class="form-control">
                         </div>
                         <div class="form-group">
@@ -142,6 +144,32 @@
 </div>
 
 
+<div class="container mb-4">
+    <label for="searchInput">Recherche:</label>
+    <input type="text" id="searchInput" placeholder="recherche...">
+    <button onclick="searchMaterial()">Rechercher</button>
+    <button onclick="resetSearch()">Reset</button>
+</div>
+
+
+
+<form method="get" action="{% url 'materiel_list' %}" class="container mb-4">
+    <label for="category">Choisir une catégorie:</label>
+    <select id="category" name="category_id">
+        <option value="" {% if not selected_category_id %}selected{% endif %}>Toutes les catégories</option>
+        {% for category_filter in categories_filter %}
+            <option value="{{ category_filter.idCategory }}" {% if selected_category_id == category_filter.idCategory|stringformat:"s" %}selected{% endif %}>
+                {{ category_filter.nomCategory }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrer</button>
+    <button type="button" onclick="location.href='{% url 'materiel_list' %}';">Reset</button>
+</form>
+
+
+
+
 <div class="container">
 
     <div class="card">
@@ -151,7 +179,7 @@
         <div class="card-body">
             {% for categorie in categories %}
             <div class="category-row" data-toggle="collapse" data-target="#sous-categorie-{{ categorie.idCategory }}"
-                aria-expanded="false" style="background-color: #3e98d1; color: white; height: 40px; 
+                aria-expanded="false" style="background-color: #3e98d1; color: white; height: 40px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -162,51 +190,20 @@
             </div>
             <div id="sous-categorie-{{ categorie.idCategory }}" class="collapse">
                 {% for sous_categorie in categorie.souscategorie_set.all %}
-                <div class="sub-category-row" data-toggle="collapse"
-                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false" style="background-color: #f7f7f7; margin-left: 2%;margin-bottom: 1%; width: 98%;     height: 30px; 
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 10px 20px;
-                    cursor: pointer;">
+                <div class="sub-category-row material-styles" data-toggle="collapse"
+                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false">
                     {{ sous_categorie.nomSousCategory }} <span class="collapse-indicator">&#x25BC;</span>
                 </div>
-                <div id="materiel-{{ sous_categorie.idSousCategorie }}" class="collapse">
-                    <div class="list-group" style="background-color: #f7f7f7; margin-left: 4%; width: 96%;">
-                        {% for materiel in sous_categorie.materiel_set.all %}
-                        <div class="material-row" style=" padding: 10px 20px;
-                        border-bottom: 1px solid #ccc;
-                        margin-bottom: 1%;">
-                            <div class="d-flex flex-wrap align-items-center">
-                                <div class="flex-grow-1">
-                                    <strong>Nom:</strong> {{ materiel.nomMateriel }}<br>
-                                    <strong>Numéro de série:</strong> {{ materiel.NumSerie }}<br>
-                                    <strong>Description:</strong> {{ materiel.description }}
-                                </div>
-                                <div>
-                                    <!-- Modifier Icon -->
-                                    <button type="button" class="btn btn-link edit-button" data-toggle="modal"
-                                        data-target="#editModal-{{ materiel.idMateriel }}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
 
-                                    <!-- Supprimer Icon -->
-                                    <button type="button" class="btn btn-link delete-button" data-toggle="modal"
-                                        data-target="#deleteConfirmationModal-{{ materiel.idMateriel }}"
-                                        style="color: red;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    <!-- Bouton pour afficher l'historique d'utilisation du matériel -->
-                                    <button type="button" class="btn btn-link history-button" data-toggle="modal"
-                                        data-target="#historyModal-{{ materiel.idMateriel }}">
-                                        <i class="fas fa-history"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                 <div id="materiel-{{ sous_categorie.idSousCategorie }}" class="collapse" data-id="{{ sous_categorie.idSousCategorie }}">
+                    <div class="list-group list_group-styles"></div>
+                    <!-- Boutons de pagination pour les matériels -->
+                    <div class="d-flex justify-content-between my-3">
+                        <button onclick="loadMaterials({{ sous_categorie.idSousCategorie }}, -1)" id="prev-{{ sous_categorie.idSousCategorie }}" class="btn btn-sm btn-outline-primary btn-pagination-prev">Précédent</button>
+                        <button onclick="loadMaterials({{ sous_categorie.idSousCategorie }}, 1)" id="next-{{ sous_categorie.idSousCategorie }}" class="btn btn-sm btn-outline-primary btn-pagination-next">Suivant</button>
                     </div>
                 </div>
+
                 {% endfor %}
             </div>
             {% endfor %}
@@ -337,7 +334,6 @@
 {% endfor %}
 
 
-{% endblock %}
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
@@ -383,7 +379,6 @@
 
     function handleSubCategoryChange(select) {
         var newSubCategoryInput = document.getElementById("new_sub_category_input");
-        var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
 
         if (select.value === "new") {
             newSubCategoryInput.style.display = "block";
@@ -393,6 +388,10 @@
             document.getElementById("new_sub_category_description").value = "";
         }
     }
-
 </script>
+<script src="{% static 'js/filter_materiel.js' %}"></script>
+<script src="{% static 'js/pagination_js.js' %}"></script>
 
+
+
+{% endblock %}
