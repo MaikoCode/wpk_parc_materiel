@@ -23,9 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-aen$e98cb-#e^fgcyg2$w3mo5jg+or9ja1m(l^05zldre#hctb'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1:8000',
+        '*',]
 
 
 # Application definition
@@ -47,6 +48,9 @@ INSTALLED_APPS = [
     'dashboardUser',
     'facture',
     'notification',
+    'demandes',
+    'django_summernote',
+    'maintenance',
    
 
 ]
@@ -60,6 +64,8 @@ MIDDLEWARE = [
     'notification.middleware.NotificationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
 ]
 
 ROOT_URLCONF = 'DjangoWPKproject.urls'
@@ -128,7 +134,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+
+STATIC_ROOT = BASE_DIR / 'productionfiles'
+
 STATIC_URL = 'static/'
+
+#Add this in your settings.py file:
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -136,11 +152,9 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'authentication.User'
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+# Ajoutez ces lignes pour gérer le stockage des fichiers téléchargés
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

@@ -2,15 +2,16 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from facture.models import Facture, LigneFacture, Article
 from django.contrib import messages
-
 from fournisseur.models import Fournisseur
-
 from django.core.paginator import Paginator
-
 from materiels.models import Materiel
+from django.contrib.auth.decorators import login_required, user_passes_test
 
-# Create your views here.
+def is_admin(user):
+    return user.role == 'ADMIN'
 
+@login_required
+@user_passes_test(is_admin)
 def home(request):
     if request.method == "POST":
         # extract fields from the POST request
@@ -18,13 +19,11 @@ def home(request):
         numero_facture = request.POST.get("numero_facture")
         ville = request.POST.get("ville")
         montant_total = request.POST.get("montant_total")
-
         #check if numero_facture is already in the db (must be unique)
         if Facture.objects.filter(numero_facture=numero_facture).exists():
             messages.error(request, 'Veuillez choisir un autre numéro de facture')
             fournisseurs = Fournisseur.objects.all()
             return render(request, 'facture.html', {'fournisseurs': fournisseurs})
-
         # create and save Facture instance
         facture = Facture.objects.create(
             date_facture=date_facture,
@@ -37,7 +36,6 @@ def home(request):
         print('facture num: ', facture.numero_facture)
         print('facture ville: ', facture.ville)
         print('montant total: ',montant_total)
-
         # extract article ids and quantities
         article_ids = request.POST.getlist("articles")
         quantities = request.POST.getlist("qty")
@@ -48,9 +46,6 @@ def home(request):
         print('articles: ', article_ids)
         print('quantities: ', quantities)
         print('les prix unitaire: ', prix_unitaires)
-
-
-
         # # create and save LigneFacture instances
         # for article_name, quantity in zip(article_names, quantities):
         #     ligne_facture = LigneFacture(
@@ -87,6 +82,8 @@ def home(request):
 # def displayfacture(request):
 #     factures = Facture.objects.all()
 #     return render(request, 'facture_list.html', {'factures': factures})
+@login_required
+@user_passes_test(is_admin)
 def displayfacture(request):
     factures_list = Facture.objects.all()
     paginator = Paginator(factures_list, 3) # Show 10 factures per page.

@@ -23,7 +23,7 @@
 
 
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-  <h1 class="h3 mb-0">Liste des demandes </h1>
+  <h1 class="h3 mb-0">Gestion des demandes des employes </h1>
 </div>
 
 
@@ -31,11 +31,11 @@
 
 <div class="card shadow mb-4">
   <div class="card-header py-3">
-    <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+    <h6 class="m-0 font-weight-bold text-primary">Liste des demandes</h6>
   </div>
   <div class="card-body">
     <!-- Search Form -->
-    <form method="get" action="{% url 'mouvements' %}">
+    <form method="get" action="{% url 'Rech_demande' %}">
       <div class="row mb-3">
         <div class="col-md-6">
           <div class="input-group">
@@ -64,6 +64,7 @@
           {% for demande in demandes %}
           <tr>
             <td>{{ demande.id }}</td>
+            <td>{{ demande.demandeur.nom }}</td>
             <td>{{ demande.date_debut }}</td>
             <td>{{ demande.description }}</td>
             <td>{{ demande.materiel.nomMateriel }}</td>
@@ -85,28 +86,40 @@
                 <i class="fas fa-check" style="color: green;"></i>
               </a>
 
-                            <!-- Bouton pour rejeter la demande -->
-                                <a href="{% url 'rejeter_demande' demande.id %}" data-toggle="modal" data-target="#rejectModal-{{ demande.id }}">
-                                        <i class="fas fa-times" style="color: red;"></i>
-                                </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <!-- pagination -->
-            <div class="container">
-              <div class="row my-5">
-                <div class="col-md-4">
-                  <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
-                  <nav aria-label="...">
-                    <ul class="pagination">
-                      <li class="page-item">
-                        {% if page.has_previous %}
-                        <a class="page-link" href="{% url 'mouvements' %}?page={{ page.previous_page_number }}">Previous</a>
-                        {% endif %}
-                      </li>
+              <!-- Pour le bouton "Rejeter" -->
+              <a href="{% url 'rejeter_demande' demande.id %}">
+                <i class="fas fa-times" style="color: red;"></i>
+              </a>
+              {% endif %}
+              {% if demande.status == "Acceptée" %}
+              <!-- Pour le bouton "Rejeter" -->
+              <a href="{% url 'rejeter_demande' demande.id %}">
+                <i class="fas fa-times" style="color: red;"></i>
+              </a>
+              {% endif %}
+              {% if demande.status == "Rejetée" %}
+              <!-- Pour le bouton "Rejeter" -->
+              <a href="{% url 'accepter_demande' demande.id %}">
+                <i class="fas fa-check" style="color: green;"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- pagination -->
+      <div class="container">
+        <div class="row my-5">
+          <div class="col-md-4">
+            <p>Page: {{ page.number }}/{{ page.paginator.num_pages }}</p>
+            <nav aria-label="...">
+              <ul class="pagination">
+                <li class="page-item">
+                  {% if page.has_previous %}
+                  <a class="page-link" href="{% url 'mouvements' %}?page={{ page.previous_page_number }}">Previous</a>
+                  {% endif %}
+                </li>
 
                 {% for num_page in page.paginator.page_range %}
                 {% if page.number == num_page %}
