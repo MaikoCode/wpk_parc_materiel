@@ -1,85 +1,102 @@
-# Parc Materiel
+# Gestion de Parc Matériel en Django
 
-Parc Materiel is a Django project used for managing equipment.
+Ce projet est une application web développée en Django pour gérer un parc matériel. Il permet aux administrateurs et aux employés de suivre et de gérer divers équipements.
+
+## Prérequis
+
+- Python 3.x
+- pip
+- Virtualenv
+- PostgreSQL
 
 ## Installation
 
-### Prerequisites
+Suivez ces étapes pour installer et configurer ce projet sur votre machine locale.
 
-Before you continue, ensure you have met the following requirements:
+### Étape 1 : Cloner le dépôt
 
-* You have installed Python3. You can verify it with the command `python3 --version`.
-* You have installed Pip for package management. Verify it with `pip3 --version`.
-* It's recommended to use a virtual environment for project isolation. 
+```bash
+git@git-wpk.pilotsystems.net:wpk/parc-materiel.git
+```
 
-### Installing Parc Materiel
+### Étape 2 : Naviguer dans le dossier du projet
 
-To install Parc Materiel, follow these steps:
+```bash
+cd parc-materiel
+```
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/parc-materiel.git
-    ```
-    Replace `yourusername` with your Github username and `parc-materiel` with the name of your repository.
+### Étape 3 : Créer et activer un environnement virtuel
 
-2. Navigate to the cloned project directory:
-    ```bash
-    cd parc-materiel
-    ```
+```bash
+python -m venv env
+env/Scripts/activate  # Sur Windows, utilisez `env\Scripts\activate`
+```
 
-3. Create a virtual environment and activate it:
-    ```bash
-    python3 -m venv env
-    source env/bin/activate  # On Windows use `env\Scripts\activate`
-    ```
+### Étape 4 : Installer les dépendances
 
-4. Install the project dependencies from the `requirements.txt` file:
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+pip install -r requirements.txt
+```
 
-### Running Parc Materiel
+## Configuration
 
-To run Parc Materiel, follow these steps:
+### Configurer la base de données
 
-1. Apply the migrations:
-    ```bash
-    python manage.py makemigrations
-    python manage.py migrate
-    ```
+1. Créez un fichier nommé `local_settings.py` dans le même dossier que votre `settings.py`.
+2. Ajoutez-y les configurations de la base de données comme suit:
 
-2. Start the Django development server:
-    ```bash
-    python manage.py runserver
-    ```
-   Now, you can navigate to `http://127.0.0.1:8000/` in your web browser to see the project running.
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '<Votre nom de la base de données>',
+        'USER': '<Votre nom d'utilisateur>',
+        'PASSWORD': '<Votre mot de passe>',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+```
+3. Executez ensuite:
+```bash
+python manage.py migrate
+```
 
-## Using Parc Materiel
 
-Parc Materiel allows you to manage equipment in an organization. 
+### Créer le superutilisateur
 
-Here's how to use it:
+Pour créer le premier utilisateur administrateur de l'application, exécutez la commande suivante:
 
-1. Navigate to the home page at `http://127.0.0.1:8000/`.
-2. You will see a list of equipment already in the system.
-3. You can add, update or delete equipment as needed using the corresponding buttons.
+```bash
+python manage.py createsuperuser
+```
 
-## Contributing to Parc Materiel
+Suivez les instructions pour créer le superutilisateur.
 
-To contribute to Parc Materiel, follow these steps:
 
-1. Fork this repository.
-2. Create a branch: `git checkout -b <branch_name>`.
-3. Make your changes and commit them: `git commit -m '<commit_message>'`
-4. Push to the original branch: `git push origin <project_name>/<location>`
-5. Create the pull request.
+## Utilisation
 
-Alternatively, see the GitHub documentation on [creating a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
+### Lancement de l'application
 
-## Contact
+```bash
+python manage.py runserver
+```
 
-If you want to contact me you can reach me at `<your_email>@<email_provider>.com`.
+### Se connecter à l'interface d'administration pour créer de nouveaux comptes ADMIN
 
-## License
+Naviguez vers `http://localhost:8000/admin` pour accéder à l'interface d'administration.
 
-This project uses the following license: [<license_name>](<link>).
+Dans l'interface admin créez un nouveau employé à la suite un nouveau utilisateur est automatiquement crée et vous pourrez par la suite changer le role de l'utilisateur en ADMIN ou en USER(par defaut il est en USER)
+
+[Interface admin](./admin1.jpeg)
+
+### Se connecter à l'application
+
+Ensuite vous pouvez vous rendre sur `http://localhost:8000/` pour utiliser l'application
+
+#### Identifiants
+- **Nom d'utilisateur** : Correspond à l'adresse email.
+- **Mot de passe** : Initialement, il correspond au nom de l'employé. Il est recommandé de le changer lors de la première connexion.
+
+
+

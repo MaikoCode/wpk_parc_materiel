@@ -39,15 +39,23 @@
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="description">Description</label>
                         <input type="text" class="form-control" id="description" name="description" required>
-                    </div>
-                      
-                    <div class="form-group">
+                    </div> -->
+                    <div class="form-group custom-summernote">
+                        <label for="{{ descform.description.id_for_label }}">Description</label>
+                        {{ descform.description }}
+                    </div>  
+                    <!-- <div class="form-group">
                         <label for="file">File:</label>
                         <input type="file" name="file" id="file" class="form-control">
+                    </div> -->
+                    <div class="form-group">
+                        <label for="files">Files:</label>
+                        <input type="file" name="files" id="files" class="form-control" multiple>
                     </div>
+                    
                     <!-- Add other fields as needed -->
                     <button type="submit" class="btn btn-primary">Save</button>
                 </form>
@@ -63,36 +71,81 @@
             Historique des maintenances des matériels
         </div>
         <div class="card-body">
-            <div class="table-responsive" style="overflow: visible;">
+            <div class="table-responsive">
                 <table class="table table-bordered table-striped">
                     <thead class="thead-w">
                         <tr>
                             <th>Num de serie</th>
                             <th>Matériel</th>
                             <th>Date panne</th>
-                            <th style="width: 30%;">Description</th>
-                            <th>Files</th>
+                            <th>Date réparation</th>
                             <th style="width: 16%;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for maintenance in maintenances %}
+                        <div class="modal fade" id="repairModal{{maintenance.id}}" tabindex="-1" role="dialog" aria-labelledby="repairModalLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="repairModalLabel">Set Repair Date</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="{% url 'set_repair_date' maintenance.id %}" method="post">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <label for="date_reparation">Date de Réparation:</label>
+                                                <input type="date" name="date_reparation" class="form-control" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Save</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <tr>
                             <td>{{ maintenance.materiel.NumSerie }}</td>
                             <td>{{ maintenance.materiel.nomMateriel }}</td>
                             <td>{{ maintenance.date_panne|date:"d-m-Y"  }}</td>
-                            <td>{{ maintenance.description }}</td>
+                            {% if maintenance.date_reparation %}
+                            <td>{{ maintenance.date_reparation|date:"d-m-Y" }}</td>
+                            {% else %}
+                            <td>Pas encore réparé</td>
+                            {% endif %}
                             <td>
-                                {% if maintenance.file %}
-                                <a href="{{ maintenance.file.url }}" target="_blank">See</a>
-                                {% else %}
-                                No file
+                                <a href="{% url 'detail_maintenance' maintenance.id %}"><i class="fas fa-eye"></i></a>
+                                {% if not maintenance.date_reparation %}
+                                <a href="#" data-toggle="modal" data-target="#repairModal{{maintenance.id}}"  title="Ajouter la date de réparation"><i class="fas fa-wrench"></i></a> 
                                 {% endif %}
-                            </td>
-                            <td>
-                                <a href="{% url 'detail_maintenance' maintenance.id %}"><i class="fas fa-eye"></i></a>                                                               
+                                <a href="#" data-toggle="modal" data-target="#deleteConfirmationModal-{{ maintenance.id }}">
+                                    <i class="fas fa-trash" style="color: red;"></i>
+                                  </a>                                                           
                             </td>
                         </tr>
+                        <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="deleteConfirmationModal-{{ maintenance.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel-{{ emp.idEmploye }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteConfirmationModalLabel-{{ maintenance.id }}">Suprimmer la maintenance</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Etes vous sure de vouloir supprimer la maintenance: ?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <a href="{% url 'delete_maintenance' maintenance.id %}" class="btn btn-danger">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                      </div>
+                      <!-- End Confirmation Modal -->
                         {% endfor %}
                     </tbody>
                 </table>
@@ -137,3 +190,9 @@
     </div>
 </div>
 {% endblock %}
+<script>
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip(); 
+    });
+    
+</script>

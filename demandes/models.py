@@ -23,13 +23,13 @@ class Ticket(models.Model):
     request_date = models.DateTimeField(default=timezone.now)
     files = models.ManyToManyField('FileUpload', blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.title
 
 
 class FileUpload(models.Model):
     file = models.FileField(upload_to='ticket_files/')
-    def __str__(self):
+    def _str_(self):
         return self.file.name
 
 
@@ -39,7 +39,5 @@ class Response(models.Model):
     response_text = models.TextField()
     response_date = models.DateTimeField(default=timezone.now)
 
-    def _str_(self):
+    def str(self):
         return f'Response by {self.employee} on {self.response_date}'
-
-

@@ -24,15 +24,32 @@
     <i class="bi bi-arrow-return-left"></i> Back
 </a>
 <div class="card" style="width: 70%; margin-left: 15%;">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="m-0 font-weight-bold text-primary">Num de série: {{ maintenance.materiel.NumSerie }}</h5>
-        <span class="text-muted">{{ maintenance.date_panne|date:"F j, Y, g:i a" }}</span>
-    </div>
-    <div class="card-body">
-        <h5 class="card-title">{{ maintenance.materiel.nomMateriel }}</h5>
-        <p class="card-text">{{ maintenance.description|safe }}</p>
-    </div>
+  <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="m-0 font-weight-bold text-primary">Num de série: {{ maintenance.materiel.NumSerie }}</h5>
+      <span class="text-muted">{{ maintenance.date_panne|date:"F j, Y, g:i a" }}</span>
+  </div>
+  <div class="card-body">
+      <h5 class="card-title">{{ maintenance.materiel.nomMateriel }}</h5>
+      <p class="card-text">{{ maintenance.description|safe }}</p>
+
+      {% if maintenance.files.all %}
+      <h6 class="mt-4">Files:</h6>
+      <div class="list-group">
+        {% for maintenance_file in maintenance.files.all %}
+            <a href="{{ maintenance_file.file.url }}" target="_blank" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-alt"></i> {{ maintenance_file.file.name }}
+            </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+
+  
+
+  
+  </div>
 </div>
+
 
 {%if maintenance.notesmaintenance.all %}
 <h3 class="mt-4 text-primary" style="margin-left: 15%;">Responses: </h3>
@@ -45,6 +62,18 @@
     </div>
     <div class="card-body">
         <p class="card-text">{{ note.response_text|safe }}</p>
+
+        {% if note.files.all %}
+      <h6 class="mt-4">Files:</h6>
+      <div class="list-group">
+        {% for note_file in note.files.all %}
+            <a href="{{ note_file.file.url }}" target="_blank" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-alt"></i> {{ note_file.file.name }}
+            </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
     </div>
 </div>
 {% endfor %}
@@ -58,9 +87,13 @@
         <h5 class="m-0 font-weight-bold text-primary">Ajouter des notes</h5>
     </div>
     <div class="card-body custom-summernote">
-        <form method="post" action="">
+        <form method="post" action="" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form2.response_text|safe }}
+            <div class="form-group">
+              <label for="files">Files:</label>
+              <input type="file" name="files" id="files" class="form-control" multiple>
+          </div>
             <button type="submit" class="btn btn-primary mt-2">Submit Note</button>
         </form>
     </div>

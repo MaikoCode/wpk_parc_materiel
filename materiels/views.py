@@ -15,36 +15,46 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
+
 
 
 def search_materials(request):
-    query = request.GET.get('query', '').strip()
+    if request.method == 'POST':
+        query = request.POST.get('query', '').strip()
 
-    materials = Materiel.objects.filter(
-        Q(nomMateriel__icontains=query) |
-        Q(NumSerie__icontains=query) |
-        Q(description__icontains=query)
-    ).values()
+        materials = Materiel.objects.filter(
+            Q(nomMateriel__icontains=query) |
+            Q(NumSerie__icontains=query) |
+            Q(description__icontains=query)
+        )
 
-    materials_list = list(materials)
+        categories = [material.sous_categorie.categorie for material in materials]
+        sub_categories = [material.sous_categorie for material in materials]
 
-    has_results = len(materials_list) > 0
+        selected_categorie_ids = [categorie.idCategory for categorie in categories]  # Convertir l'objet en liste d'IDs
+        selected_Sous_categorie_ids = [sub_categorie.idSousCategorie for sub_categorie in sub_categories]
 
-    return JsonResponse({'data': materials_list, 'has_results': has_results})
+        context = {
+            'categories': categories,
+            'sub_categories': sub_categories,
+            'materials': materials,
+            'selected_categorie_ids': selected_categorie_ids,  # Passer les IDs des catégories sélectionnées
+            'selected_Sous_categorie_ids': selected_Sous_categorie_ids,  # Passer les IDs des sous-catégories sélectionnées
+            'search_query': query
+        }
+        
+        if(request.user.role  == 'ADMIN'):
+            return render(request, 'materiels.html', context)
+        else:
+            return render(request, 'materiels_user.html', context)
 
+    
+    if(request.user.role  == 'ADMIN'):
+        return render(request, 'materiels.html', context)
+    else:
+        return render(request, 'materiels_user.html', context)
 
-def get_materials_for_subcategory(request, subcategory_id, page=1):
-    try:
-        subcategory = SousCategorie.objects.get(idSousCategorie=subcategory_id)
-        materials = list(subcategory.materiel_set.values()) # Convert queryset to list of dictionaries
-
-        # Utilisez Paginator pour paginer les résultats
-        paginator = Paginator(materials, 5)  # Affichez 5 matériaux par page
-        current_page_materials = paginator.get_page(page)
-
-        return JsonResponse({'data': list(current_page_materials), 'has_next': current_page_materials.has_next()})
-    except SousCategorie.DoesNotExist:
-        return JsonResponse({'error': 'SousCategorie not found'}, status=404)
 
 
 def is_admin(user):
@@ -54,38 +64,46 @@ def is_user(user):
     return user.role == 'USER'
 
 @method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_admin), name='dispatch')
 class MaterielListView(View):
     def get(self, request):
         category_id = request.GET.get('category_id')
+        
+        # Charger les catégories
         categories_filter = Categorie.objects.all()
-
+        
         if category_id:
             categories = Categorie.objects.filter(idCategory=category_id)
         else:
             categories = categories_filter
-
-        sub_categories = SousCategorie.objects.all()
+        
+        # Charger les autres filtres
         fournisseurs = Fournisseur.objects.all()
-
+        # Charger les autres filtres (sub_categories, form, etc.)
+        
+        # Préparer les données JSON pour les filtres
         categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
-        sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory,
-                                'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
+        # Préparer les autres données JSON pour les filtres (sub_categories_json, etc.)
 
+        # Créer le formulaire
         form = MaterielForm()
 
         context = {
             'categories_filter': categories_filter,
             'categories': categories,
-            'sub_categories': sub_categories,
-            'form': form,
+            # Ajouter d'autres filtres à context (sub_categories, form, etc.)
             'categories_json': json.dumps(categories_json),
-            'sub_categories_json': json.dumps(sub_categories_json),
+            # Ajouter d'autres données JSON pour les filtres (sub_categories_json, etc.)
             'fournisseurs': fournisseurs,
             'selected_category_id': category_id  # Ajout de l'ID de la catégorie sélectionnée au contexte
         }
+        
+        if(request.user.role  == 'ADMIN'):
+            return render(request, 'materiels.html', context)
+        else:
+            return render(request, 'materiels_user.html', context)
+            
 
-        return render(request, 'materiels.html', context)
+
 
     def post(self, request):
         form = MaterielForm(request.POST)
@@ -126,6 +144,90 @@ class MaterielListView(View):
         messages.error(request, "Une erreur s'est produite lors de la soumission du formulaire.")
         return render(request, 'materiels.html', context)
 
+def get_sous_categories_for_categorie(request, categorie_id):
+    try:
+        categories = Categorie.objects.values('idCategory', 'nomCategory')
+        selected_categorie = Categorie.objects.get(idCategory=categorie_id)
+        selected_categorie_ids = [selected_categorie.idCategory]  # Créer une liste d'IDs de catégories
+
+        sub_categories = selected_categorie.souscategorie_set.all()
+        fournisseurs = Fournisseur.objects.all()
+
+
+        category_id = request.GET.get('category_id')
+        # Charger les catégories
+        categories_filter = Categorie.objects.all()
+        if category_id:
+            categories = Categorie.objects.filter(idCategory=category_id)
+        else:
+            categories = categories_filter
+        # Charger les autres filtres
+        fournisseurs = Fournisseur.objects.all()
+        context = {
+            'categories': categories,
+            'selected_categorie': selected_categorie,
+            'sub_categories': sub_categories,
+            'categories_filter': categories_filter,
+            'selected_categorie_ids':selected_categorie_ids,
+            'fournisseurs': fournisseurs,
+
+            'selected_category_id': category_id  # Ajout de l'ID de la catégorie sélectionnée au contexte
+
+        }
+
+        
+        if(request.user.role  == 'ADMIN'):
+            return render(request, 'materiels.html', context)
+        else:
+            return render(request, 'materiels_user.html', context)
+        
+    except Categorie.DoesNotExist:
+        return JsonResponse({'error': 'Category not found'}, status=404)
+
+
+
+
+def get_materials_for_subcategory(request, category_id, subcategory_id):
+    try:
+        # Récupération des catégories et sous-catégories
+        categories = Categorie.objects.values('idCategory', 'nomCategory')
+        selected_categorie = Categorie.objects.get(idCategory=category_id)
+        sub_categories = selected_categorie.souscategorie_set.all()
+        selected_subcategorie = SousCategorie.objects.get(idSousCategorie=subcategory_id)
+        fournisseurs = Fournisseur.objects.all()
+
+        selected_categorie_ids = [selected_categorie.idCategory]  
+        selected_Sous_categorie_ids = [selected_subcategorie.idSousCategorie ]  
+        # Récupération des matériaux pour la sous-catégorie sélectionnée
+        materials_list = selected_subcategorie.materiel_set.all()
+
+        # Pagination
+        page = request.GET.get('page', 1)  # Récupère le numéro de page de la requête, sinon utilise 1 par défaut
+        paginator = Paginator(materials_list, 4)  # 10 matériaux par page
+        materials = paginator.get_page(page)
+
+        context = {
+            'categories': categories,
+            'sub_categories': sub_categories,
+            'selected_categorie': selected_categorie,
+            'selected_Sous_categorie': selected_subcategorie,
+            'selected_categorie_ids':selected_categorie_ids,
+            'selected_Sous_categorie_ids':selected_Sous_categorie_ids,
+            'fournisseurs': fournisseurs,
+            'materials': materials
+        }
+
+        
+        if(request.user.role  == 'ADMIN'):
+            return render(request, 'materiels.html', context)
+        else:
+            return render(request, 'materiels_user.html', context)
+        
+    except SousCategorie.DoesNotExist:
+        return JsonResponse({'error': 'SousCategorie not found'}, status=404)
+
+
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -153,124 +255,4 @@ def edit_materiel(request, materiel_id):
             messages.success(request, "Les infos de l'employé " + materiel.nomMateriel  +" sont modifiés")
     return redirect('materiel_list')
 
-# Utilisez la classe basée sur les vues pour votre vue MaterielListView_User
 
-@method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_user), name='dispatch')
-class MaterielListView_User(View):
-    
-    def get(self, request):
-        categories = Categorie.objects.all()
-        sub_categories = SousCategorie.objects.all()
-        fournisseurs = Fournisseur.objects.all()
-        materiels = Materiel.objects.all()
-        demandes = DemandeMateriel.objects.all()
-        # Convertir les données en JSON
-        categories_json = [{'id': category.idCategory, 'nom': category.nomCategory} for category in categories]
-        sub_categories_json = [{'id': sous_categorie.idSousCategorie, 'nom': sous_categorie.nomSousCategory, 'categorie': sous_categorie.categorie_id} for sous_categorie in sub_categories]
-        form = MaterielForm()
-        context = {
-            'categories': categories,
-            'sub_categories': sub_categories,
-            'form': form,
-            'categories_json': json.dumps(categories_json),
-            'sub_categories_json': json.dumps(sub_categories_json),
-            'fournisseurs': fournisseurs,
-            'demandes': demandes,  
-        }
-        return render(request, 'materiels_user.html', context)
-
-
-@login_required
-@user_passes_test(is_user)
-def demander_materiel(request):
-    if request.method == 'POST':
-        form = DemandeMaterielForm(request.POST)
-        if form.is_valid():
-            date_debut = form.cleaned_data['date_debut']
-            description = form.cleaned_data['description']
-            materiel_id = form.cleaned_data['materiel']
-            demandeur_id = form.cleaned_data['demandeur']
-            nouvelle_demande = DemandeMateriel.objects.create(
-                date_debut=date_debut,
-                description=description,
-                materiel=materiel_id,
-                demandeur=demandeur_id
-            )
-            nouvelle_demande.save()
-            # Rediriger l'utilisateur vers la page de confirmation ou une autre vue appropriée
-            messages.success(request, 'La demande a été envoyée avec succès.')
-            return redirect('materiels_user')
-        else:
-            # Le formulaire n'est pas valide, afficher les erreurs dans les messages framework
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
-    else:
-        # Si la méthode est GET, afficher le formulaire vide
-        form = DemandeMaterielForm()
-    return redirect('materiels_user')
-
-class Gestion_Demande(ListView):
-    model = DemandeMateriel
-    template_name = 'gestion_demande.html'
-    context_object_name = 'demandes'
-
-    def get(self, request):
-        demandes=DemandeMateriel.objects.all()
-        l=["ID demande",
-            "Demandeur",
-            "Date de début d'utilisation",
-            "Description de la demande",
-            "nom materiel",
-            "N° Série matériel",
-            "Description",
-            "disponibilité",
-            "Statut",
-            "Actions"]
-        context = {'titles':l, 'demandes':demandes}
-        return render(request, 'gestion_demande.html', context)
-
-    def post(self, request, *args, **kwargs):
-        demande_id = request.POST.get('demande_id')
-        action = request.POST.get('action')
-        demande = DemandeMateriel.objects.get(id=demande_id)
-        if action == 'valider':
-            # Mettre à jour le statut de la demande
-            demande.status = 'Validee'
-            demande.save()
-            messages.success(request, f'Demande {demande.id} validée avec succès.')
-        elif action == 'rejeter':
-            # Mettre à jour le statut de la demande
-            demande.status = 'Rejetee'
-            demande.save()
-            messages.warning(request, f'Demande {demande.id} rejetée.')
-        return render(request, self.template_name, {'demandes': self.get_queryset()})
-
-
-@login_required
-@user_passes_test(is_admin)
-def accepter_demande(request, demande_id):
-    demande = get_object_or_404(DemandeMateriel, id=demande_id)
-    # Mettre à jour le statut de la demande en "Acceptée"
-    demande.status = "Acceptée"
-    demande.save()
-    # Afficher un message de succès
-    messages.success(request, "La demande a été acceptée avec succès.")
-    # Rediriger l'utilisateur vers la même page
-    return redirect(request.META['HTTP_REFERER'])  
-
-@login_required
-@user_passes_test(is_admin)
-def rejeter_demande(request, demande_id):
-    demande = get_object_or_404(DemandeMateriel, id=demande_id)
-    demande.status = "Rejetée"
-    demande.save()
-    # Afficher un message de succès
-    messages.success(request, "La demande a été rejetée.")
-    # Rediriger l'utilisateur vers la même page
-    return redirect(request.META['HTTP_REFERER']) 
-
-@login_required
-def Rech_demande(request):
-    return render(request, 'gestion_demande.html')

@@ -7,3 +7,4 @@ class Employe(models.Model):
     poste = models.CharField(max_length=100)
     dateEmbauche = models.CharField(max_length=100)
     email = models.CharField(max_length=130)
+    

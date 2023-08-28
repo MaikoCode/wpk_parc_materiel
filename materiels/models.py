@@ -25,6 +25,7 @@ class Materiel(models.Model):
     en_panne = models.BooleanField(default=False)
 
 
+
 class DemandeMateriel(models.Model):
     demandeur = models.ForeignKey(Employe, on_delete=models.CASCADE)
     materiel = models.ForeignKey(Materiel, on_delete=models.CASCADE)

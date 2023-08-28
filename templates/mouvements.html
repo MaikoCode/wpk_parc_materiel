@@ -52,24 +52,30 @@
                 <label for="description">Description</label>
                 <input type="text" class="form-control" id="description" name="description" required>
             </div>
+
+
             <div class="form-group">
-                <label for="employe">Employé</label>
-                <select class="form-control" id="employe" name="employe">
-                    <option value=" ">Veuillez selectionner un employé</option>
-                    {% for emp in form.employe.field.queryset %}
-                        <option value="{{ emp.pk }}">{{ emp.nom }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="materiel">Matériel</label>
-                <select class="form-control" id="materiel" name="materiel">
-                    <option value=" ">Veuillez selectionner un matériel</option>
-                    {% for mat in form.materiel.field.queryset %}
-                        <option value="{{ mat.pk }}">{{ mat.nomMateriel }} - {{ mat.NumSerie }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+              <label for="employe">Employé</label>
+              <input type="text" placeholder="Search.." id="myInputEmploye" onkeyup="filterFunctionEmploye()" class="form-control">
+              <select class="form-control" id="employe" name="employe">
+                  {% for emp in form.employe.field.queryset %}
+                      <option value="{{ emp.pk }}">{{ emp.nom }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+          
+
+
+          <div class="form-group">
+            <label for="materiel">Matériel</label>
+            <input type="text" placeholder="Search.." id="myInputMateriel" onkeyup="filterFunctionMateriel()" class="form-control">
+            <select class="form-control" id="materiel2" name="materiel">
+                {% for mat in form.materiel.field.queryset %}
+                    <option value="{{ mat.pk }}">{{ mat.nomMateriel }} - {{ mat.NumSerie }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
 
 
             <div class="modal-footer">

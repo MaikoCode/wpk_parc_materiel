@@ -46,7 +46,7 @@ def create_user_for_employe(sender, instance, created, **kwargs):
         # Utilisez le nom de l'employé comme mot de passe par défaut
         username = instance.email
         password = instance.nom
-        user = User.objects.create(username=username, role=User.USER, employe=instance)
+        user = User.objects.create(username=username, role=User.ADMIN, employe=instance)
         user.set_password(password)  # Définir le mot de passe pour le nouvel utilisateur
         user.save()
 

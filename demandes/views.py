@@ -83,7 +83,7 @@ def change_status(request, ticket_id, status):
 
 def alltickets(request):
     form = TicketFilterForm(request.GET)
-    tickets = Ticket.objects.all()
+    tickets = Ticket.objects.all().order_by('request_date')
     if form.is_valid():
         employee = form.cleaned_data['employee']
         status = form.cleaned_data['status']

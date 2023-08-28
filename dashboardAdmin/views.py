@@ -1,4 +1,3 @@
-# views.py (Django example)
 from datetime import datetime
 from django.shortcuts import render
 from employe.models import Employe
@@ -7,6 +6,9 @@ from facture.models import Facture
 from django.db.models import Sum
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required, user_passes_test
+from demandes.models import Ticket
+from maintenance.models import Maintenance
+from django.db.models import Q
 
 def is_admin(user):
     return user.role == 'ADMIN'
@@ -26,8 +28,8 @@ def dashboardView(request):
     categories = Categorie.objects.all()
     materiels_en_panne = Materiel.objects.filter(en_panne=True).count()
     # Calculate percentage of materiels en panne
-    percentage_en_panne = (materiels_en_panne / total_materiels) * 100 if total_materiels > 0 else 0
-    pending_requests = DemandeMateriel.objects.filter(status='pas encore traite').count()
+    percentage_en_panne = Maintenance.objects.filter(Q(date_reparation__isnull=True)).count()
+    pending_requests = Ticket.objects.filter(status='open').count()
     current_year = datetime.now().year
     montants_par_mois = Facture.objects.filter(date_facture__year=current_year).values('date_facture__month').annotate(total_montant=Sum('montant_total'))
     # Create a list to store the montants for each month (in the order of months)
@@ -40,7 +42,6 @@ def dashboardView(request):
     sous_category_names = [sous_category.nomSousCategory for sous_category in sous_categories]
     materiel_counts = [sous_category.materiel_count for sous_category in sous_categories]
 
-    percentage_en_panne = round(percentage_en_panne, 2)
     context = {
         'total_materiels': total_materiels,
         'available_materiels': available_materiels,

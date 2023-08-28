@@ -1,10 +1,13 @@
 {% extends 'baseUser.html' %}
-{% load custom_filters %}
 {% load static %}
+
 {% block content %}
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Liste materiel Wpk</h1>
+
+    <!-- Formulaire de filtrage -->
+
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -14,165 +17,138 @@
         {% endfor %}
     </div>
     {% endif %}
+    <!-- Button trigger modal -->
+  
 </div>
+
+
+
+<div class="container mb-4">
+    <form method="post" action="{% url 'search_materials' %}">
+        {% csrf_token %}
+        <label for="searchInput">Recherche:</label>
+        <input type="text" id="searchInput" name="query" placeholder="recherche...">
+        <button type="submit">Rechercher</button>
+        <button type="button" onclick="resetSearch()">Reset</button>
+    </form>
+</div>
+
+
+
+<form method="get" action="{% url 'materiel_list' %}" class="container mb-4">
+    <label for="category">Choisir une catégorie:</label>
+    <select id="category" name="category_id">
+        <option value="" {% if not selected_category_id %}selected{% endif %}>Toutes les catégories</option>
+        {% for category_filter in categories_filter %}
+        <option value="{{ category_filter.idCategory }}" 
+        {% if selected_category_id == category_filter.idCategory|stringformat:"s" %} selected {% endif %}>
+            {{ category_filter.nomCategory }}
+        </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrer</button>
+    <button type="button" onclick="location.href='{% url 'materiel_list' %}';">Reset</button>
+</form>
+
+
+
+
 <div class="container">
     <div class="card">
         <div class="card-header">
             Catégories
         </div>
         <div class="card-body">
-            {% if form.errors %}
-            <div class="alert alert-danger">
-                {% for field in form %}
-                {% for error in field.errors %}
-                <strong>{{ field.label }}:</strong> {{ error }}
-                {% endfor %}
-                {% endfor %}
-            </div>
-            {% endif %}
             {% for categorie in categories %}
-            <div class="category-row" data-toggle="collapse" data-target="#sous-categorie-{{ categorie.idCategory }}"aria-expanded="false">
-                {{ categorie.nomCategory }} <span class="collapse-indicator">&#x25BC;</span>
-            </div>
-            <div id="sous-categorie-{{ categorie.idCategory }}" class="collapse">
-                {% for sous_categorie in categorie.souscategorie_set.all %}
-                <div class="sub-category-row" data-toggle="collapse"
-                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false" >
-                    {{ sous_categorie.nomSousCategory }} <span class="collapse-indicator">&#x25BC;</span>
+            <a href="{% url 'get_sous_categories_for_categorie' categorie.idCategory %}">
+                <div id="categorie-{{selected_categorie}}" class="category-row"
+                    data-category-id="{{ categorie.idCategory }}">
+                    {{ categorie.nomCategory }}
+                    <span class="collapse-indicator">&#x25BC;</span>
                 </div>
-                <div id="materiel-{{ sous_categorie.idSousCategorie }}" class="collapse">
-                    <div class="list-group" style="background-color: #f7f7f7; margin-left: 4%; width: 96%;">
-                        {% for materiel in sous_categorie.materiel_set.all %}
-                        <div class="material-row" >
-                            <div class="d-flex flex-wrap align-items-center">
-                                <div class="flex-grow-1">
-                                    <strong>Nom:</strong> {{ materiel.nomMateriel }}<br>
-                                    <strong>Numéro de série:</strong> {{ materiel.NumSerie }}<br>
-                                    <strong>Description:</strong> {{ materiel.description }}
-                                </div>
-                                <div>
-                                    {% if not materiel.is_taken %}
+            </a>
+            <div id="sous-categorie-{{ categorie.idCategory }}">
+                {% if categorie.idCategory in selected_categorie_ids %} <!-- Vérifier si la catégorie est sélectionnée -->
+                {% for sous_categorie in sub_categories %}
+                <div class="sub-category-row material-styles" data-toggle="collapse"
+                    data-target="#materiel-{{ sous_categorie.idSousCategorie }}" aria-expanded="false">
 
-                                    {% if not request.user.id|exist_demande:materiel.idMateriel %}
+                    <div id="sous-categorie-{{selected_categorie}}" style="text-align: right;">
+                        <a
+                            href="{% url 'get_materials_for_subcategory' categorie.idCategory sous_categorie.idSousCategorie  %}">
+                            <span style="margin-right: 10px;">{{ sous_categorie.nomSousCategory }}</span>
+                        </a>
+                    </div>
 
+                    <div style="display: flex; align-items: center;">
+                        <a href="{% url 'get_sous_categories_for_categorie' categorie.idCategory %}">
+                            <span class="collapse-indicator" style="margin-right: 5px;">&#x25B2;</span>
+                        </a>
 
-                                    <!-- Bouton pour demander le matériel -->
-                                    <button type="button" class="btn btn-link add-button" data-toggle="modal"
-                                        data-target="#addModal-{{ materiel.idMateriel }}">
-                                        <i class="fa fa-plus-circle" aria-hidden="true"></i>
-                                        Demander
-                                    </button>
-                                    {% else %}
-                                    <span>Vous avez déjà soumis une demande pour ce matériel.</span>
+                        <a
+                            href="{% url 'get_materials_for_subcategory' categorie.idCategory sous_categorie.idSousCategorie  %}">
+                            <span class="collapse-indicator">&#x25BC;</span>
+                        </a>
+                    </div>
 
-                                    {% with demande_status=request.user.id|demande_statut:materiel.idMateriel %}
-                                    {% if demande_status and demande_status != "pas encore traite" %}
-                                    <br>
-                                    Statut de la demande : {{ demande_status }}
-                                    {% endif %}
-                                    {% endwith %}
-                                    {% endif %}
-                                    {% else %}
-                                    <span>Ce matériel est actuellement indisponible.</span>
-                                    {% endif %}
-                                </div>
+                </div>
+                {% if sous_categorie.idSousCategorie in selected_Sous_categorie_ids %} <!-- Vérifier si la sous-catégorie est sélectionnée -->
+                <div class="list-group">
+                    {% for materiel in materials %} <!-- Utilisation du paginateur -->
+
+                    <div class="material-row">
+                        <div class="d-flex flex-wrap align-items-center">
+                            <div class="flex-grow-1">
+                                <strong>Nom:</strong> {{ materiel.nomMateriel }}<br>
+                                <strong>Numéro de série:</strong> {{ materiel.NumSerie }}<br>
+                                <strong>Description:</strong> {{ materiel.description }}
+                            </div>
+                            <div>
+                                
                             </div>
                         </div>
-                        {% endfor %}
+                    </div>
+
+
+
+                    {% endfor %}
+
+                    <!-- Pagination -->
+                    <!-- Pagination -->
+                    <div class="pagination" style="display: flex; flex-direction: column; align-items: start; margin:0 0 2rem 2em;">
+                        <!-- Current Page Number and Total Pages -->
+                        <div class="mb-3">Page: {{ materials.number }}/{{ materials.paginator.num_pages }}</div>
+                        
+                        <!-- Buttons -->
+                        <div>
+                            <!-- Précédent Button -->
+                            {% if materials.has_previous %}
+                            <a href="?page={{ materials.previous_page_number }}" class="btn btn-primary mr-2">Précédent</a>
+                            {% else %}
+                            <span class="btn btn-primary disabled mr-2">Précédent</span>
+                            {% endif %}
+                            
+                            <!-- Suivant Button -->
+                            {% if materials.has_next %}
+                            <a href="?page={{ materials.next_page_number }}" class="btn btn-primary">Suivant</a>
+                            {% else %}
+                            <span class="btn btn-primary disabled">Suivant</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+                {% endif %}
                 {% endfor %}
+                {% endif %}
             </div>
             {% endfor %}
         </div>
     </div>
-    <br><br>
-    <div class="card">
-        <div class="card-header">
-            Mes Demandes
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead class="thead-w">
-                        <tr>
-                            <th>ID demande</th>
-                            <th>Date de début d'utilisation</th>
-                            <th>Description de la demande</th>
-                            <th>Nom matériel</th>
-                            <th>N° Série matériel</th>
-                            <th>Description</th>
-                            <th>Disponibilité</th>
-                            <th>Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for demande in demandes %}
-                        <tr>
-                            <td>{{ demande.id }}</td>
-                            <td>{{ demande.date_debut }}</td>
-                            <td>{{ demande.description }}</td>
-                            <td>{{ demande.materiel.nomMateriel }}</td>
-                            <td>{{ demande.materiel.NumSerie }}</td>
-                            <td>{{ demande.materiel.description }}</td>
-                            <td>
-                                {% if demande.materiel.is_taken %}
-                                <span class="badge badge-danger">Matériel occupé</span>
-                                {% else %}
-                                <span class="badge badge-success">Disponible</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ demande.status }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 </div>
-<!-- Modals -->
-{% for categorie in categories %}
-{% for sous_categorie in categorie.souscategorie_set.all %}
-{% for materiel in sous_categorie.materiel_set.all %}
-
-<!-- add demande Modal -->
-<div class="modal fade" id="addModal-{{ materiel.idMateriel }}" tabindex="-1" role="dialog"
-    aria-labelledby="addModalLabel-{{ materiel.idMateriel }}" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addModalLabel-{{ materiel.idMateriel }}">Demander {{ materiel.nomMateriel }}
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{% url 'demander_materiel'  %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="date_debut">Date de début d'utilisation :</label>
-                        <input type="date" class="form-control" id="date_debut" name="date_debut">
-                    </div>
-                    <div class="form-group">
-                        <label for="description">Description de la demande :</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-                    </div>
-                    <input type="hidden" id="materiel " name="materiel" value="{{ materiel.idMateriel }}">
-                    <input type="hidden" id="demandeur" name="demandeur" value="{{ request.user.employe.idEmploye }}">
-                    <button type="submit" class="btn btn-primary">Envoyer la demande</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-{% endfor %}
-{% endfor %}
-{% endfor %}
 
 <script>
+
+    // Gérer le basculement de la flèche de catégorie lors du clic
     // Gérer le basculement de la flèche de catégorie lors du clic
     $('.category-row').click(function (event) {
         event.stopPropagation();
@@ -180,15 +156,19 @@
         var target = $(this).data('target');
         $(target).toggleClass('show');
     });
+
     $('.sub-category-row').click(function (event) {
         event.stopPropagation();
         $(this).find('.collapse-indicator').toggleClass('collapsed');
         var target = $(this).data('target');
         $(target).toggleClass('show');
     });
+
+
     function handleCategoryChange(select) {
         var newCategoryInput = document.getElementById("new_category_input");
         var newCategoryOption = document.querySelector("#categorie option[value='new']");
+
         if (select.value === "new") {
             newCategoryInput.style.display = "block";
         } else {
@@ -196,6 +176,7 @@
             document.getElementById("new_category_name").value = "";
             document.getElementById("new_category_description").value = "";
         }
+
         // Activer/désactiver les options de sous-catégorie en fonction de la catégorie sélectionnée
         var selectedCategoryId = select.value;
         var subCategoryOptions = document.querySelectorAll('.sub-category-option');
@@ -204,9 +185,10 @@
             option.disabled = optionCategory !== selectedCategoryId && optionCategory !== "";
         }
     }
+
     function handleSubCategoryChange(select) {
         var newSubCategoryInput = document.getElementById("new_sub_category_input");
-        var newSubCategoryOption = document.querySelector("#sub_category option[value='new']");
+
         if (select.value === "new") {
             newSubCategoryInput.style.display = "block";
         } else {
@@ -215,11 +197,31 @@
             document.getElementById("new_sub_category_description").value = "";
         }
     }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Récupérer l'ID de la sous-catégorie de Django
+        var CategorieId = "categorie-{{selected_categorie}}";
+        var sousCategorieId = "sous-categorie-{{selected_categorie}}";
+
+        // Faire défiler jusqu'à la sous-catégorie
+        var CategorieElement = document.getElementById("categorie-{{selected_categorie}}");
+        if (CategorieElement) {
+            CategorieElement.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        var sousCategorieElement = document.getElementById("sous-categorie-{{ categorie.idCategory }}");
+        if (sousCategorieElement) {
+            sousCategorieElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
+
+
 </script>
 
-<script src="{% static 'libs/slim-min.js' %}"></script>
-<script src="{% static 'libs/bootstrap-min.js' %}"></script>
-<script src="{% static 'libs/popper-min.js' %}"></script>
-<script src="{% static 'js/notifications.js' %}"></script>
-{% endblock %}
+<script src="{% static 'js/filter_materiel.js' %}"></script>
 
+
+
+{% endblock %}

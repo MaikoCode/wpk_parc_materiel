@@ -1,12 +1,9 @@
-
 from django.contrib import admin
 from django.urls import path, include
 import authentication.views
 import employe.views
 import fournisseur.views
 from materiels.views import MaterielListView
-from materiels.views import MaterielListView_User
-from materiels.views import  Gestion_Demande
 import materiels.views
 import mouvementmateriels.views
 import dashboardAdmin.views
@@ -45,7 +42,8 @@ urlpatterns = [
     path('materiel/', MaterielListView.as_view(), name='materiel_list'),
     path('materiel/<int:materiel_id>/delete/', materiels.views.delete_materiel, name='delete_materiel'),
     path('materiel/<int:materiel_id>/edit/', materiels.views.edit_materiel, name='edit_materiel'),
-    path('materiels_user/', MaterielListView_User.as_view(), name='materiels_user'),
+    path('get_materials_for_subcategory/<int:category_id>/<int:subcategory_id>/', materiels.views.get_materials_for_subcategory, name='get_materials_for_subcategory'),
+    path('get_sous_categories_for_categorie/<int:categorie_id>/', materiels.views.get_sous_categories_for_categorie, name='get_sous_categories_for_categorie'),
 
    #mouvements materiels
     path('mouvements/',mouvementmateriels.views.mouvements, name='mouvements'),
@@ -54,7 +52,6 @@ urlpatterns = [
     path('mouvement/<int:idMouvement>/affect',mouvementmateriels.views.affecter_mouvement,name='affecter_mouvement'),
     
 
-    path('Gestion_Demande',Gestion_Demande.as_view(),name='Gestion_Demande'),
 
 
     path('pannes/', pannes.views.pannes_page, name="pannes"),
@@ -62,18 +59,14 @@ urlpatterns = [
     path('pannes/csv/', pannes.views.download_pannes_csv, name='pannes_csv'),
     path('pannes_user/', pannes.views.pannes_page_user, name="pannes_user"),
 
-    path('demander_materiel/', materiels.views.demander_materiel, name='demander_materiel'),
-    path('accepter_demande/<int:demande_id>/', materiels.views.accepter_demande, name='accepter_demande'),
-    path('rejeter_demande/<int:demande_id>/', materiels.views.rejeter_demande, name='rejeter_demande'),
 
-    path('get_materials_for_subcategory/<int:subcategory_id>/<int:page>/', materiels.views.get_materials_for_subcategory, name='get_materials_for_subcategory'),
     path('search_materials/', materiels.views.search_materials, name='search_materials'),
 
     #facture
     path('facture/', facture.views.home, name='facture'),
     path('displayfacture/', facture.views.displayfacture, name='displayfacture'),
     path('read_notification/<int:notification_id>/', notification.views.read_notification, name='read_notification'),
-
+    
     #tickets
     path('demande_user/', demandes.views.DemandePage, name='demande_user'),
     path('summernote/', include('django_summernote.urls')),
@@ -81,10 +74,17 @@ urlpatterns = [
     path('alltickets/',demandes.views.alltickets , name='alltickets' ),
     path('detail_ticket_admin/<int:ticket_id>/', demandes.views.detailTicketAdmin, name="detail_ticket_admin"),
     path('change_status/<int:ticket_id>/<str:status>/', demandes.views.change_status, name='change_status'),
+    
+    
+    #change password
+    
+    path('change_password/', authentication.views.change_password, name='change_password'),
 
     #maintenance
     path('maintenance/', maintenance.views.maintenances, name='maintenance'),
     path('detail_maintenance/<int:maintenace_id>/', maintenance.views.detailMaintenance,name="detail_maintenance"),
+    path('set_repair_date/<int:maintenance_id>/', maintenance.views.set_repair_date, name='set_repair_date'),
+    path('delete_maintenance/<int:maintenance_id>/', maintenance.views.delete_maintenance, name='delete_maintenance'),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 
 ]
@@ -96,4 +96,3 @@ handler404 = 'dashboardAdmin.views.error_404_view'
 if settings.DEBUG:
     # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-

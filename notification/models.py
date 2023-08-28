@@ -22,7 +22,3 @@ class Notification(models.Model):
 
 def create_notification(user, message, role_target='ADMIN', theme=''):
     Notification.objects.create(user=user, message=message, role_target=role_target, theme=theme)
-
-
-
-
